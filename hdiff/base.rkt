@@ -44,8 +44,6 @@
                                                         (cdr tagged)))]
   ))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Applying a deletion context to whatever term
 

@@ -10,9 +10,9 @@
 (define m-unif (make-hash))
 
 
-(define s-protected (mutable-set))
+(define s-enabled (mutable-set))
 
-(define (update-protected-set)
+(define (update-enabled-set)
 ;; The 'protected' set is a set of metavariables that need not be
 ;; instantiated in the insertion contexts because they are "shadowed"
 ;; by a variable in a deletion context. Example:
@@ -26,7 +26,7 @@
 ;; that the occurences of (var 1) that appear unbound in the insertion contexts
 ;; are 'protected of errors' because (var 1) has a definition point.
   (hash-for-each m-del (lambda (k term)
-    (ast-map-tag 'var (lambda (v) (set-add! s-protected (var-get v))) term))))
+    (ast-map-tag 'var (lambda (v) (set-add! s-enabled (var-get v))) term))))
 
 (define (diff3 oa ob)
   (let ([r (patch-make oa ob 'disagreement)])
@@ -34,7 +34,7 @@
        (hash-clear! m-ins)
        (hash-clear! m-unif)
        (ast-map-tag 'disagreement (curry reconcile 'phase1) r)
-       (update-protected-set)
+       (update-enabled-set)
        (ast-map-tag 'disagreement (curry reconcile 'phase2) r)
 ))
 
@@ -59,7 +59,7 @@
   (hash-ref! m-ins (var-get var) var))
 
 (define (refine-if-not-protected var)
-  (cond [(not (set-member? s-protected (var-get var)))
+  (cond [(not (set-member? s-enabled (var-get var)))
            (refine-ins var)]
         [else var]
 ))
@@ -105,6 +105,13 @@
         [(eq? phase 'phase2)
            (list 'chg 
                  (patch-get-del other)
+                 ;; TODO: don't assume cp is (var x |-> var y)
+                 ;;       instead, assume cp is (var x |-> TY) and ensure
+                 ;;       that instantiating TY leaves only enabled variables behind.
+                 ;; TODO2: assume that cp is (TX |-> TY), and now, perform unification
+                 ;;        with 'other'. This would make a more uniform merging approach
+                 ;;        It seems like if we keep careful track of the enabled set
+                 ;;        we might be able to make this work.
                  (refine-if-not-protected (chg-get-ins cp)))] 
   )
 )
