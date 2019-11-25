@@ -9,7 +9,7 @@
         [o  (cadddr tc)] 
         [r (cadr (cdddr tc))])
 
-   (with-handlers ([exn:fail? (lambda (ex) (begin (print ex) (if (eq? r 'conflict) 'success 'failed)))])
+   (with-handlers ([exn:fail? (lambda (ex) (if (eq? r 'conflict) 'success 'failed))])
       (let ([m (diff3 pa pb)])
         (cond [(eq? r 'conflict) 'wow]
               [else (if (equal? (patch-apply m o) r) 'success 'failed)]))
@@ -966,62 +966,64 @@
 (define tc19pp (list 'tc pa-19pp pb-19pp o19pp r19pp))
 
 (define tests 
-  (list tc1nn
-        tc1ps
-        tc1pp
-        tc2nn
-        tc2ps
-        tc2pp
-        tc3nn
-        tc3ps
-        tc3pp
-        tc4nn
-        tc4ps
-        tc4pp
-        tc5nn
-        tc5ps
-        tc5pp
-        tc6nn
-        tc6ps
-        tc6pp
-        tc7nn
-        tc7ps
-        tc7pp
-        tc8nn
-        tc8ps
-        tc8pp
-        tc9nn
-        tc9ps
-        tc9pp
-        tc10nn
-        tc10ps
-        tc10pp
-        tc11nn
-        tc11ps
-        tc11pp
-        tc12nn
-        tc12ps
-        tc12pp
-        tc13nn
-        tc13ps
-        tc13pp
-        tc14nn
-        tc14ps
-        tc14pp
-        tc15nn
-        tc15ps
-        tc15pp
-        tc16nn
-        tc16ps
-        tc16pp
-        tc17nn
-        tc17ps
-        tc17pp
-        tc18nn
-        tc18ps
-        tc18pp
-        tc19nn
-        tc19ps
-        tc19pp
+  (list (list 'tc1nn tc1nn)
+        (list 'tc1ps tc1ps)
+        (list 'tc1pp tc1pp)
+        (list 'tc2nn tc2nn)
+        (list 'tc2ps tc2ps)
+        (list 'tc2pp tc2pp)
+        (list 'tc3nn tc3nn)
+        (list 'tc3ps tc3ps)
+        (list 'tc3pp tc3pp)
+        (list 'tc4nn tc4nn)
+        (list 'tc4ps tc4ps)
+        (list 'tc4pp tc4pp)
+        (list 'tc5nn tc5nn)
+        (list 'tc5ps tc5ps)
+        (list 'tc5pp tc5pp)
+        (list 'tc6nn tc6nn)
+        (list 'tc6ps tc6ps)
+        (list 'tc6pp tc6pp)
+        (list 'tc7nn tc7nn)
+        (list 'tc7ps tc7ps)
+        (list 'tc7pp tc7pp)
+        (list 'tc8nn tc8nn)
+        (list 'tc8ps tc8ps)
+        (list 'tc8pp tc8pp)
+        (list 'tc9nn tc9nn)
+        (list 'tc9ps tc9ps)
+        (list 'tc9pp tc9pp)
+        (list 'tc10nn tc10nn)
+        (list 'tc10ps tc10ps)
+        (list 'tc10pp tc10pp)
+        (list 'tc11nn tc11nn)
+        (list 'tc11ps tc11ps)
+        (list 'tc11pp tc11pp)
+        (list 'tc12nn tc12nn)
+        (list 'tc12ps tc12ps)
+        (list 'tc12pp tc12pp)
+        (list 'tc13nn tc13nn)
+        (list 'tc13ps tc13ps)
+        (list 'tc13pp tc13pp)
+        (list 'tc14nn tc14nn)
+        (list 'tc14ps tc14ps)
+        (list 'tc14pp tc14pp)
+        (list 'tc15nn tc15nn)
+        (list 'tc15ps tc15ps)
+        (list 'tc15pp tc15pp)
+        (list 'tc16nn tc16nn)
+        (list 'tc16ps tc16ps)
+        (list 'tc16pp tc16pp)
+        (list 'tc17nn tc17nn)
+        (list 'tc17ps tc17ps)
+        (list 'tc17pp tc17pp)
+        (list 'tc18nn tc18nn)
+        (list 'tc18ps tc18ps)
+        (list 'tc18pp tc18pp)
+        (list 'tc19nn tc19nn)
+        (list 'tc19ps tc19ps)
+        (list 'tc19pp tc19pp)
   ))
 
+(define results 
+  (map (lambda (x) (list (car x) (runtc (cadr x)))) tests))
