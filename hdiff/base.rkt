@@ -17,6 +17,13 @@
           [i (chg-get-ins node)])
          (and (var? d) (var? i) (eq? (var-get d) (var-get i))))))
  
+(define (cpy-or-perm? node)
+  (and (chg? node)
+    (let ([d (chg-get-del node)]
+          [i (chg-get-ins node)])
+         (and (var? d) (var? i)))))
+ 
+
 (define (chg-get-del chg)
   (car (cdr chg)))
 
@@ -47,14 +54,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Applying a deletion context to whatever term
 
+(define (hash-add-contract h k v)
+  (if (hash-has-key? h k)
+      (when (not (eq? (hash-ref h k) v))
+            (error (~a "contraction failure: " k " " v)))
+      (hash-set! h k v)))
+
 (define m-match (make-hash))
-(define (holes-match pat term)
+(define (holes-match pat term [phi '()])
    (ast-zip-with (lambda (vx tx)
-     (cond [(var? vx) 
-             (if (hash-has-key? m-match (var-get vx))
-                 (when (not (eq? (hash-ref! m-match (var-get vx)) tx))
-                       (error (~a "contraction failure: " vx " " tx)))
-                 (hash-set! m-match (var-get vx) tx))]
+     (cond [(var? vx)         (hash-add-contract m-match (var-get vx) tx)]
+           [(not (null? phi)) (phi vx tx)]
            [else (error (~a "pattern match fail: " vx " " tx))])) pat term)
    (void))
 

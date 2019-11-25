@@ -1,7 +1,7 @@
 #lang racket
 
 (require "hdiff/base.rkt")
-(require "mergers/merge-nov21.rkt")
+(require "mergers/merge-nov25.rkt")
 
 ;; Test Values
 
@@ -21,7 +21,7 @@
   '(bin b (var 2))))
 
 (define p2 (patch-make
-  '(bin (var 0) (bin c leaf))
+  '(bin (var 0) (bin C leaf))
   '(bin (var 0) (bin (var 0) leaf))))
 
 (define q2 q1)
