@@ -1,7 +1,7 @@
 #lang racket
 
 (require "hdiff/base.rkt")
-(require "mergers/merge-nov25.rkt")
+(require "mergers/merge-nov26.rkt")
 
 (define (runtc tc) 
   (let ([pa (cadr tc)] 
@@ -9,12 +9,21 @@
         [o  (cadddr tc)] 
         [r (cadr (cdddr tc))])
 
-   (with-handlers ([exn:fail? (lambda (ex) (if (eq? r 'conflict) 'success 'failed))])
+   (with-handlers ([exn:fail? (lambda (ex) 
+        (if (eq? r 'conflict) 'fsuccess 'ffailed))])
+        ;; (print ex))])
       (let ([m (diff3 pa pb)])
         (cond [(eq? r 'conflict) 'wow]
               [else (if (equal? (patch-apply m o) r) 'success 'failed)]))
    )) 
 )
+
+(define auxA
+  '(chg (binb (bina k leaf) leaf) leaf))
+
+(define auxB
+  '(binb (bina (chg k u) leaf) (chg leaf (binb (bina k leaf) leaf))))
+
   
 
 (define dela-1nn
@@ -1026,4 +1035,4 @@
   ))
 
 (define results 
-  (map (lambda (x) (list (car x) (runtc (cadr x)))) tests))
+ (map (lambda (x) (list (car x) (runtc (cadr x)))) tests))
