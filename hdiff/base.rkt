@@ -57,7 +57,7 @@
 (define (hash-add-contract h k v)
   (if (hash-has-key? h k)
       (when (not (eq? (hash-ref h k) v))
-            (error (~a "contraction failure: " k " " v)))
+            (error (~a "contraction failure: " k " [" v ", " (hash-ref h k) "]")))
       (hash-set! h k v)))
 
 (define m-match (make-hash))

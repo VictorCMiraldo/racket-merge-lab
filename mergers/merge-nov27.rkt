@@ -1,7 +1,9 @@
 #lang racket
 
 (require racket/set)
-(require "../hdiff/base.rkt")
+(require (rename-in "../hdiff/base.rkt"
+                    (holes-match        old-holes-match)
+                    (hash-add-contract  old-hash-add-contract)))
 
 (provide (all-defined-out))
 
@@ -93,4 +95,36 @@
   (cond [(eq? rac-conf #f) `(ref refine ,chg)]
         [(eq? rac-conf #t) `(ref conflict ,chg , term)])
 )
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; changelog:
+;;
+;; Instead of failing on contractions on the fly,
+;; store them in a contractor and fail later.
+
+(define (holes-match pat term [phi '()])
+   (ast-zip-with (lambda (vx tx)
+     (cond [(var? vx)         (hash-add-contract m-match (var-get vx) tx)]
+           [(not (null? phi)) (phi vx tx)]
+           [else (error (~a "pattern match fail: " vx " " tx))])) pat term)
+   (void))
+
+(define (contr1 v)
+  (list 'ccc v))
+
+(define (contr? l)
+  (and (pair? l) (eq? (car l) 'ccc)))
+
+(define (contr-+ ctr el)
+  (if (not (member el ctr))
+      (append (list 'ccc el) (cdr ctr))
+      ctr))
+
+(define (hash-add-contract h k v)
+  (if (hash-has-key? h k)
+      (hash-set! h k (contr-+ (hash-ref h k) v))
+      (hash-set! h k (contr1 v))))
+
+
 
