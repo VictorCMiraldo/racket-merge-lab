@@ -25,10 +25,10 @@
     (hash-add-contract m-ins k (patch-get-ins term)))))
 
 (define (apply-refinements ref)
-  (cond [(eq? (cadr ref) 'testeq) (ref-testequality (cddr ref))]
-        [(eq? (cadr ref) 'refine) (ref-refine (caddr ref))]
-        [(eq? (cadr ref) 'conflict) (error "conflict!")]
-        [else (print "ah")])
+  (match (cdr ref)
+    [(cons 'testeq   r) (ref-testequality r)]
+    [(cons 'refine   r) (ref-refine r)]
+    [(cons 'conflict r) (error "conflict")])
 )
 
 (define (ref-testequality ref2)
@@ -41,14 +41,18 @@
              (full-refine m-ins (chg-get-ins ref2))))
 
 (define (full-refine h term [vars (mutable-set)])
-  (define aux (mutable-set))
-  (define term2 
-    (ast-map-tag 'var (lambda (v) 
+  (ast-map-tag 'var (lambda (v)
       (if (hash-has-key? h (var-get v))
-          (begin (set-add! aux (var-get v)) (hash-ref h (var-get v)))
+          (hash-ref h (var-get v))
           v)) term)
-  )
-  (if (set=? aux vars) term2 (full-refine h term2 aux))
+;  (define aux (mutable-set))
+;  (define term2 
+;    (ast-map-tag 'var (lambda (v) 
+;      (if (hash-has-key? h (var-get v))
+;          (begin (set-add! aux (var-get v)) (hash-ref h (var-get v)))
+;          v)) term)
+;  )
+;  (if (set=? aux vars) term2 (full-refine h term2 aux))
 )
       
 (define (reconcile ca cb)
@@ -69,32 +73,25 @@
 )
 
 (define (reconcile-cpychg cpy chg)
-   (hash-add-contract m-match (var-get (chg-get-del cpy)) chg)
-   `(ref refine ,chg)
+   (reconcile-app cpy chg)
+   ;(hash-add-contract m-match (var-get (chg-get-del cpy)) chg)
+   ;`(ref refine ,chg)
 )
   
-(define rac-conf #f)
 (define (reconcile-app-chgchg currdel chg)
-  (println (~a currdel))
-  (println (~a chg))
-  (println "=====")
   (cond [(cpy-or-perm? chg) 
             (hash-set! m-del (var-get (chg-get-del chg)) currdel)]
-        [else (set! rac-conf #t)])
+        [else (raise 'conflict)])
 )
 
 (define (reconcile-app chg term)
 ;; Reconcile a change over a spine.
 ;;
-  (println (~a chg))
-  (println (~a term))
-  (println "----------")
-
-  (set! rac-conf #f)
-  (holes-match (chg-get-del chg) term reconcile-app-chgchg)
-  (cond [(eq? rac-conf #f) `(ref refine ,chg)]
-        [(eq? rac-conf #t) `(ref conflict ,chg , term)])
-)
+  (with-handlers ([(curry eq? 'conflict)
+                  (lambda (_) `(ref conflict ,chg ,term))])
+    (holes-match (chg-get-del chg) term reconcile-app-chgchg)
+    `(ref refine ,chg)
+))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;

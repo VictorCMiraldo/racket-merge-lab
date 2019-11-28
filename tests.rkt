@@ -4,18 +4,14 @@
 (require "mergers/merge-nov26.rkt")
 
 (define (runtc tc) 
-  (let ([pa (cadr tc)] 
-        [pb (caddr tc)] 
-        [o  (cadddr tc)] 
-        [r (cadr (cdddr tc))])
-
+  (match tc [(list 'tc pa pb o r) 
    (with-handlers ([exn:fail? (lambda (ex) 
         (if (eq? r 'conflict) 'fsuccess 'ffailed))])
         ;; (print ex))])
       (let ([m (diff3 pa pb)])
         (cond [(eq? r 'conflict) 'wow]
               [else (if (equal? (patch-apply m o) r) 'success 'failed)]))
-   )) 
+   )]) 
 )
 
 (define auxA
