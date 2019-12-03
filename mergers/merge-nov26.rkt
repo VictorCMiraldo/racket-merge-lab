@@ -10,13 +10,13 @@
 
 (define (diff3 oa ob)
 ;; The algorithm proceeds in two phases. 
-;; First we reconcile the own-variable map of
+;; First we discover the own-variable map of
 ;; the anti-unification of oa and ob
 ;;
   (hash-clear! m-del)
   (hash-clear! m-ins)
   (hash-clear! m-match)
-  (let [(phase1 (ast-zip-with<> oa ob reconcile))]
+  (let [(phase1 (ast-zip-with<> oa ob discover))]
        (make-del-ins-maps) ;; the we split the maps ensuring
                            ;; all our decisions are consistent.
        ;; Finally, we perform either refinements or
@@ -65,28 +65,28 @@
   (if (set=? aux vars) term2 (full-refine h term2 aux))
 )
       
-(define (reconcile ca cb)
+(define (discover ca cb)
 ; ca :: Patch
 ; cb :: Patch
- (cond [(and (chg? ca) (chg? cb)) (reconcile-chgchg ca cb)]
-       [(chg? ca)                 (reconcile-app ca cb)]
-       [(chg? cb)                 (reconcile-app cb ca)]
+ (cond [(and (chg? ca) (chg? cb)) (discover-chgchg ca cb)]
+       [(chg? ca)                 (discover-app ca cb)]
+       [(chg? cb)                 (discover-app cb ca)]
        [else                      'not-a-span]) ;; Precondition failure
 )
 
-(define (reconcile-chgchg ca cb)
-;; Reconcile two changes at the same point.
+(define (discover-chgchg ca cb)
+;; Discover two changes at the same point.
 ;;
 ;; If either is a copy or a permutation we are fine,
 ;; otherwise, we can only accept this if they are the same change.
 ;;
 ;; ca , cb :: Chg
-  (cond [(cpy-or-perm? ca) (reconcile-app ca cb)]
-        [(cpy-or-perm? cb) (reconcile-app cb ca)]
+  (cond [(cpy-or-perm? ca) (discover-app ca cb)]
+        [(cpy-or-perm? cb) (discover-app cb ca)]
         [else `(ref testeq ,ca ,cb)])
 )
 
-(define (reconcile-app-chgchg currdel chg)
+(define (discover-app-chgchg currdel chg)
 ; Tries to salvage the match of a deletion context ove
 ; a change. As usual, if this change is just a copy or permutation
 ; we record our instantiation and go on, otherwise we raise
@@ -96,16 +96,16 @@
         [else (raise 'conflict)])
 )
 
-(define (reconcile-app chg spine)
-;; Reconcile a change over a spine; The idea is that
+(define (discover-app chg spine)
+;; Discover a change over a spine; The idea is that
 ;; we will try to match the deletion context (d) of the
 ;; change against the spine. If this fails because (d)
 ;; requires some specific shape but the spine contains a change
-;; at that point, we call 'reconcile-app-chgchg'.
+;; at that point, we call 'discover-app-chgchg'.
 ;;
   (with-handlers ([(curry eq? 'conflict)
                   (lambda (_) `(ref conflict ,chg ,spine))])
-    (holes-match (chg-get-del chg) spine reconcile-app-chgchg)
+    (holes-match (chg-get-del chg) spine discover-app-chgchg)
     ;; When this is all said and done, we issue a 'refine
     ;; tag for the next pass.
     `(ref refine ,chg)
