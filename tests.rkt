@@ -1032,3 +1032,8 @@
 
 (define results 
  (map (lambda (x) (list (car x) (runtc (cadr x)))) tests))
+
+(define ok
+  (and (map (lambda (x) (or (eq? (cadr x) 'success) 
+                            (eq? (cadr x) 'fsuccess))) 
+        results)))
