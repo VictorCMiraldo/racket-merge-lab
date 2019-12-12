@@ -30,9 +30,17 @@
 (define (chg-get-ins chg)
   (car (cdr (cdr chg))))
 
+
 (define (ast-zip-with f x y)
 ; Zips an ast with f
 ;   (X -> Y -> Z) -> T X -> T Y -> T Z
+;
+; Mostly used to anti-unify terms.
+; Example:
+;
+;   (ast-zip-with (lambda (x y) (list 'aunif x y)) '(a b (c d)) '(a B (c D)))
+;   > '(a (aunif b B) (c (aunif d D)))
+;
   (cond [(or (var? x) (var? y) (chg? x) (chg? y))
            (f x y)]
         [(and (not (pair? x)) (not (pair? y))) 
@@ -45,6 +53,12 @@
 (define (ast-zip-with<> x y f) (ast-zip-with f x y))
 
 (define (ast-map-tag tag f tagged)
+; Maps a function over elements tagged by 'tag; For example:
+;
+;   (ast-map-tag 'aunif println '(a (aunif b B) (c (aunif d D))))
+;   > (aunif b B)
+;   > (aunif d D)
+;
   (cond [(not (pair? tagged))   tagged]
         [(eq? (car tagged) tag) (f tagged)]
         [else                   (cons (car tagged) (map (curry ast-map-tag tag f) 
@@ -62,6 +76,11 @@
 
 (define m-match (make-hash))
 (define (holes-match pat term [phi '()])
+; Given a tree with holes 'pat' and a term; will try to match
+; pat against the term and insert the instantiations chosen for
+; the variables in 'm-match'
+;
+; phi can be used to override a pattern-match fail.
    (ast-zip-with (lambda (vx tx)
      (cond [(var? vx)         (hash-add-contract m-match (var-get vx) tx)]
            [(not (null? phi)) (phi vx tx)]

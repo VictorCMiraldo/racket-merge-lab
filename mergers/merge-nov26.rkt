@@ -9,15 +9,25 @@
 (define m-ins (make-hash))
 
 (define (diff3 oa ob)
+;; The algorithm proceeds in two phases. 
+;; First we discover the own-variable map of
+;; the anti-unification of oa and ob
+;;
   (hash-clear! m-del)
   (hash-clear! m-ins)
   (hash-clear! m-match)
-  (let [(phase1 (ast-zip-with<> oa ob reconcile))]
-       (make-del-ins-maps)
+  (let [(phase1 (ast-zip-with<> oa ob discover))]
+       (make-del-ins-maps) ;; the we split the maps ensuring
+                           ;; all our decisions are consistent.
+       ;; Finally, we perform either refinements or
+       ;; equality checks on the places where phase1 has signalled.
        (ast-map-tag 'ref apply-refinements phase1))
 )
 
 (define (make-del-ins-maps)
+;; Splits the m-match map into the deletion part and insertion part.
+;; m-match :: Map Int (Holes Int , Holes Int)
+;;
   (hash-for-each m-match (lambda (k term)
     (hash-add-contract m-del k (patch-get-del term))
     (hash-add-contract m-ins k (patch-get-ins term)))))
@@ -25,20 +35,26 @@
 (define (apply-refinements ref)
   (cond [(eq? (cadr ref) 'testeq) (ref-testequality (cddr ref))]
         [(eq? (cadr ref) 'refine) (ref-refine (caddr ref))]
-        [(eq? (cadr ref) 'conflict) (error "conflict!")]
-        [else (print "ah")])
+        [(eq? (cadr ref) 'conflict) (error "conflict!")])
 )
 
 (define (ref-testequality ref2)
+; ref2 :: (Chg , Chg)
+;
+; Ensures the changes are equal.
   (if (equal? (ref-refine (car ref2)) (ref-refine (cadr ref2)))
       (car ref2)
       (error "conflict!!!")))
 
-(define (ref-refine ref2)
-  (list 'chg (full-refine m-del (chg-get-del ref2))
-             (full-refine m-ins (chg-get-ins ref2))))
+(define (ref-refine chg)
+; chg :: Chg
+  (list 'chg (full-refine m-del (chg-get-del chg))
+             (full-refine m-ins (chg-get-ins chg))))
 
 (define (full-refine h term [vars (mutable-set)])
+; Given a term and a hash map 'h'; substitute the variables
+; of the term until a fixpoint is reached.
+; Pardon the ugly implementation...
   (define aux (mutable-set))
   (define term2 
     (ast-map-tag 'var (lambda (v) 
@@ -49,48 +65,49 @@
   (if (set=? aux vars) term2 (full-refine h term2 aux))
 )
       
-(define (reconcile ca cb)
- (cond [(and (chg? ca) (chg? cb)) (reconcile-chgchg ca cb)]
-       [(chg? ca)                 (reconcile-app ca cb)]
-       [(chg? cb)                 (reconcile-app cb ca)]
+(define (discover ca cb)
+; ca :: Patch
+; cb :: Patch
+ (cond [(and (chg? ca) (chg? cb)) (discover-chgchg ca cb)]
+       [(chg? ca)                 (discover-app ca cb)]
+       [(chg? cb)                 (discover-app cb ca)]
        [else                      'not-a-span]) ;; Precondition failure
 )
 
-(define (reconcile-chgchg ca cb)
-;; Reconcile two changes
+(define (discover-chgchg ca cb)
+;; Discover two changes at the same point.
 ;;
-  (cond [(cpy? ca) (reconcile-cpychg ca cb)]
-        [(cpy? cb) (reconcile-cpychg cb ca)]
-        [(cpy-or-perm? ca) (reconcile-app ca cb)]
-        [(cpy-or-perm? cb) (reconcile-app cb ca)]
+;; If either is a copy or a permutation we are fine,
+;; otherwise, we can only accept this if they are the same change.
+;;
+;; ca , cb :: Chg
+  (cond [(cpy-or-perm? ca) (discover-app ca cb)]
+        [(cpy-or-perm? cb) (discover-app cb ca)]
         [else `(ref testeq ,ca ,cb)])
 )
 
-(define (reconcile-cpychg cpy chg)
-   (hash-add-contract m-match (var-get (chg-get-del cpy)) chg)
-   `(ref refine ,chg)
-)
-  
-(define rac-conf #f)
-(define (reconcile-app-chgchg currdel chg)
-  (println (~a currdel))
-  (println (~a chg))
-  (println "=====")
+(define (discover-app-chgchg currdel chg)
+; Tries to salvage the match of a deletion context ove
+; a change. As usual, if this change is just a copy or permutation
+; we record our instantiation and go on, otherwise we raise
+; a conflict.
   (cond [(cpy-or-perm? chg) 
             (hash-set! m-del (var-get (chg-get-del chg)) currdel)]
-        [else (set! rac-conf #t)])
+        [else (raise 'conflict)])
 )
 
-(define (reconcile-app chg term)
-;; Reconcile a change over a spine.
+(define (discover-app chg spine)
+;; Discover a change over a spine; The idea is that
+;; we will try to match the deletion context (d) of the
+;; change against the spine. If this fails because (d)
+;; requires some specific shape but the spine contains a change
+;; at that point, we call 'discover-app-chgchg'.
 ;;
-  (println (~a chg))
-  (println (~a term))
-  (println "----------")
-
-  (set! rac-conf #f)
-  (holes-match (chg-get-del chg) term reconcile-app-chgchg)
-  (cond [(eq? rac-conf #f) `(ref refine ,chg)]
-        [(eq? rac-conf #t) `(ref conflict ,chg , term)])
-)
+  (with-handlers ([(curry eq? 'conflict)
+                  (lambda (_) `(ref conflict ,chg ,spine))])
+    (holes-match (chg-get-del chg) spine discover-app-chgchg)
+    ;; When this is all said and done, we issue a 'refine
+    ;; tag for the next pass.
+    `(ref refine ,chg)
+))
 
