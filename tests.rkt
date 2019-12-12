@@ -1,7 +1,7 @@
 #lang racket
 
 (require "hdiff/base.rkt")
-(require "mergers/merge-nov26.rkt")
+(require "mergers/merge-dec12.rkt")
 
 (define (runtc tc) 
   (match tc [(list 'tc pa pb o r) 
