@@ -95,6 +95,14 @@
   sigma
 )
 
+(define (simpl subst eqs)
+  (hash-for-each eqs (lambda (vx tx)
+    (cond [(hash-has-key? subst vx) (unify (hash-ref subst vx) tx subst)]
+          [else                     (hash-set! subst vx tx)])
+  ))
+  (minimize subst) 
+)
+
 (define (diff3 sp sq)
   (define p0 (patch-get-del sp))
   (define p1 (patch-get-ins sp))
@@ -102,28 +110,57 @@
   (define q1 (patch-get-ins sq))
   (let*-values ([(p dp ip) (anti-unif p0 p1 'vp)]
                 [(q dq iq) (anti-unif q0 q1 'vq)])
+    ;; discovery phase
     (define gamma (minimize (unify p q)))
     (hash-union! dp dq)
     (hash-union! ip iq) 
-    (define dels dp)
-    (define inss ip)
 
     (hash-for-each gamma (lambda (v t)
-      (define st (minimize (unify t (hash-ref dels v))))
-      (hash-union! dels st #:combine/key (lambda (k v0 v1) (mk-contr v0 v1)))
-      ))
+      ;; if t is a spine, we should "apply" (dp v |-> ip v) to t
+      ;; if t is a variable; then we have the chg-chg scenario.
+      (define chgA `(chg ,(subst-apply dp v) ,(subst-apply ip v)))
+      (define chgB `(chg ,(subst-apply dp t) ,(subst-apply ip t)))
+      (unify (subst-apply dp v) t ip)
+    )) 
+    (define dels (simpl (minimize dp) gamma)) 
+    (define inss (minimize ip))
+    (ast-map-tag<> 'var p (lambda (v)
+      `(chg ,(subst-apply dels v) ,(subst-apply inss v))))
+      
 
-    (set! dels (minimize (contr-solve dels)))
-
-    (define gamma2 (make-hash))
-    (hash-for-each gamma (lambda (v t)
-        (hash-set! gamma2 v `(chg ,(subst-apply dels t) 
-                                  ,(subst-apply inss t))))
-      )
-
-    (let*-values ([(R RP RQ) (anti-unif p q 'r)])
-       (values R RP RQ gamma2 dels inss))
+;;    (values p gamma (simpl (minimize dp) gamma) (minimize ip))
 ))
+
+
+
+(define pa '(bin (chg (var 0) (var 1)) (chg (var 1) (var 0))))
+(define pb '(bin (chg a b)             (chg (var 3) (var 3))))
+
+(define qa '(chg (var 5) (bin (var 5) (var 5))))
+
+;; 
+;;     (define gamma (minimize (unify p q)))
+;;     (hash-union! dp dq)
+;;     (hash-union! ip iq) 
+;;     (define dels dp)
+;;     (define inss ip)
+;; 
+;;     (hash-for-each gamma (lambda (v t)
+;;       (define st (minimize (unify t (hash-ref dels v))))
+;;       (hash-union! dels st #:combine/key (lambda (k v0 v1) (mk-contr v0 v1)))
+;;       ))
+;; 
+;;     (set! dels (minimize (contr-solve dels)))
+;; 
+;;     (define gamma2 (make-hash))
+;;     (hash-for-each gamma (lambda (v t)
+;;         (hash-set! gamma2 v `(chg ,(subst-apply dels t) 
+;;                                   ,(subst-apply inss t))))
+;;       )
+;; 
+;;     (let*-values ([(R RP RQ) (anti-unif p q 'r)])
+;;        (values R RP RQ gamma2 dels inss))
+;; ))
 
 
 ;; '(bina
@@ -131,44 +168,3 @@
 ;;   (binb
 ;;    (chg (var 0) (var 1))
 ;;    (chg (binb (var 1) leaf) (binb (bina a leaf) (binb (var 0) leaf)))))
-
-'(bina (var r7) (binb (var r8) (var r9)))
-
-r7 = vp1 and vq4, but these are all equal. We're good.
-  r7 becomes (chg (var 7) (var 7))
-
-r8 = vp2 and vq5
-  del vp2 = (var 5) and del vq5 = (var 5)
-  ins vp2 = (var 1) and ins vq5 = (var 5)
-  r8 becomes (chg (var 5) (var 1))
-
-r9 = (bin (var vp3) leaf) and (var vq6)
-  del (bin (var vp3) leaf) = (bin (var 1) leaf) and del vq6 = (bin (var 1) leaf)
-  ins (bin (var vp3) leaf)
-    = (bin (var 0) leaf)
-  ins (var vq6) = binb (bina a leaf) (var 4)
-
-'#hash(((var r8) . (var vp2))
-       ((var r7) . (var vp1))
-       ((var r9) . (binb (var vp3) leaf)))
-
-'#hash(((var r8) . (var vq5)) 
-       ((var r7) . (var vq4)) 
-       ((var r9) . (var vq6)))
-
-'#hash(((var vp3) . (var 1))
-       ((var vp1) . (var 7))
-       ((var vq5) . (var 5))
-       ((var vq4) . (var 7))
-       ((var 4) . (binb (var 1) leaf))
-       ((var 0) . (var 5))
-       ((var vp2) . (var 5))
-       ((var 2) . (var 7))
-       ((var vq6) . (binb (var 1) leaf)))
-
-'#hash(((var vp3) . (var 0))
-       ((var vp1) . (var 2))
-       ((var vp2) . (var 1))
-       ((var vq5) . (var 5))
-       ((var vq4) . (var 7))
-       ((var vq6) . (binb (bina a leaf) (var 4))))

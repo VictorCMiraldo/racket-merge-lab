@@ -92,7 +92,8 @@
 ; we record our instantiation and go on, otherwise we raise
 ; a conflict.
   (cond [(cpy-or-perm? chg) 
-            (hash-set! m-del (var-get (chg-get-del chg)) currdel)]
+            ; (hash-set! m-del (var-get (chg-get-del chg)) currdel)]
+            (print "yay")]
         [else (raise 'conflict)])
 )
 

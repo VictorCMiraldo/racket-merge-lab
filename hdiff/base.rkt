@@ -52,6 +52,9 @@
 
 (define (ast-zip-with<> x y f) (ast-zip-with f x y))
 
+(define (ast-map-tag<> tag tagged f)
+  (ast-map-tag tag f tagged))
+
 (define (ast-map-tag tag f tagged)
 ; Maps a function over elements tagged by 'tag; For example:
 ;
