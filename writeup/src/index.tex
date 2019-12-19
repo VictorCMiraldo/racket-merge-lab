@@ -1,0 +1,302 @@
+\documentclass{article}
+
+%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%
+%% Template 
+
+%% END TEMPLATE
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
+%
+% Our formatting rules and included packages.
+%
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Recommended by the ACM ppl
+\usepackage{booktabs}
+\usepackage{subcaption}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Our packages
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usepackage[all]{xy}
+
+%% Cleveref must be the last loaded package
+%% since it modifies the cross-ref system.
+\usepackage{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Our defs
+
+%% Drawing patches using tikz
+\newenvironment{twothreetree}{%
+\begin{tikzpicture}[%
+  sibling distance=3em,
+  innernode/.style = {rectangle , draw},
+  leafnode/.style = { } ,
+  subtree/.style = {regular polygon , regular polygon sides=3 , draw , scale=0.2} ]%
+}{%
+\end{tikzpicture}%
+}
+
+%% More space between rows
+\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
+
+%% Logistic Stuff
+
+\definecolor{C1}{RGB}{0,153,204}
+\definecolor{C2}{RGB}{89,0,179}
+
+\newcounter{commentctr}[section]
+\setcounter{commentctr}{0}
+\renewcommand{\thecommentctr}{%
+\arabic{section}.\arabic{commentctr}}
+
+\newcommand{\warnme}[1]{%
+{\color{red} \textbf{$[$} #1 \textbf{$]$}}}
+
+\newcommand{\TODO}[1]{%
+{\color{purple} \textbf{$[$ TODO: } #1 \textbf{$]$}}}
+
+\newcommand{\tmp}[1]{%
+{\color{gray} \textit{#1} }}
+
+\newenvironment{temp}{\bgroup \color{gray} \textit}{\egroup}
+
+\newcommand{\victor}[2][nolabel]{%
+{\color{C2} \refstepcounter{commentctr}\label{#1} \textbf{$[$ (\thecommentctr) Victor: } #2 \textbf{$]$}}}
+
+%% LaTeX stuff
+
+\newenvironment{myhs}{\par\vspace{0.15cm}\begin{minipage}{\textwidth}}{\end{minipage}\vspace{0.15cm}}
+
+%% Repository
+%%   https://github.com/VictorCMiraldo/hs-digems
+\newcommand{\hsdigemsgit}[0]{https://github.com/VictorCMiraldo/hs-digems}
+
+\newcommand{\bigO}[1]{\mathcal{O}(#1)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% lhs2TeX Formatting Rules
+%%
+%% Comment out to use lhs2TeX default formatting.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+%% Haskell Styling
+%%
+%% TODO: Figure out spacing!
+
+%% Colors (from duo-tone light syntax)
+\definecolor{hsblack}{RGB}{45,32,3}
+\definecolor{hsgold1}{RGB}{179,169,149}
+\definecolor{hsgold2}{RGB}{177,149,90}
+\definecolor{hsgold3}{RGB}{190,106,13}%{192,96,4}%{132,97,19}
+\definecolor{hsblue1}{RGB}{173,176,182}
+\definecolor{hsblue2}{RGB}{113,142,205}
+\definecolor{hsblue3}{RGB}{0,33,132}
+\definecolor{hsblue4}{RGB}{97,108,132}
+\definecolor{hsblue5}{RGB}{34,50,68}
+\definecolor{hsred2}{RGB}{191,121,103}
+\definecolor{hsred3}{RGB}{171,72,46}
+
+%% LaTeX Kerning nastiness. By using curly braces to delimit color group,
+%% it breaks spacing. The following seems to work:
+%%
+%% https://tex.stackexchange.com/questions/85033/colored-symbols/85035#85035
+%%
+\newcommand*{\mathcolor}{}
+\def\mathcolor#1#{\mathcoloraux{#1}}
+\newcommand*{\mathcoloraux}[3]{%
+  \protect\leavevmode
+  \begingroup
+    \color#1{#2}#3%
+  \endgroup
+}
+\newcommand{\HSKeyword}[1]{\mathcolor{hsgold3}{\textbf{#1}}}
+\newcommand{\HSNumeral}[1]{\mathcolor{hsred3}{#1}}
+\newcommand{\HSChar}[1]{\mathcolor{hsred2}{#1}}
+\newcommand{\HSString}[1]{\mathcolor{hsred2}{#1}}
+\newcommand{\HSSpecial}[1]{\mathcolor{hsblue4}{\ensuremath{#1}}}
+\newcommand{\HSSym}[1]{\mathcolor{hsblue4}{\ensuremath{#1}}}
+\newcommand{\HSCon}[1]{\mathcolor{hsblue3}{#1}}
+\newcommand{\HSVar}[1]{\mathcolor{hsblue5}{\mathit{\ensuremath{#1}}}}
+\newcommand{\HSComment}[1]{\mathcolor{hsgold2}{\textit{#1}}}
+
+
+%%% lhs2TeX parser does not recognize '*' 
+%%% in kind annotations, it thinks it is a multiplication.
+
+
+%%
+
+% Easy to typeset Haskell types using the 
+% commands from stylish.lhs (if it's defined!)
+\newcommand{\HT}[1]{\ifdefined\HSCon\HSCon{#1}\else#1\fi}
+\newcommand{\HS}[1]{\ifdefined\HSSym\HSSym{#1}\else#1\fi}
+\newcommand{\HV}[1]{\ifdefined\HSVar\HSVar{#1}\else#1\fi}
+
+%%% Datatype Promotion
+
+%%% Usefull Notation
+
+%% Formatting type-applications
+
+
+%% Words with wrong kerning
+%
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%% Title information
+\title{The Case Against Edit Scripts}
+\author{Victor Cacciari Miraldo}
+%%\affiliation{
+%%  \position{PhD candidate}
+%%  \department{Information and Computing Sciences}
+%%  \institution{Utrecht University}
+%%  \streetaddress{Princetonplein, 5}
+%%  \city{Utrecht}
+%%  \state{Utrecht}
+%%  \postcode{3584 CC}
+%%  \country{The Netherlands} 
+%%}
+%%\email{v.cacciarimiraldo@@uu.nl}
+%
+%%\author{Wouter Swierstra}
+%%\affiliation{
+%%  \position{Assistant Professor}
+%%  \department{Information and Computing Sciences}
+%%  \institution{Utrecht University}
+%%  \streetaddress{Princetonplein, 5}
+%%  \city{Utrecht}
+%%  \state{Utrecht}
+%%  \postcode{3584 CC}
+%%  \country{The Netherlands} 
+%%}
+%%\email{w.s.swierstra@@uu.nl}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Body
+%
+\section{Wow}
+
+
+lorem ipsum dolor sit 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Bibliography
+\bibliography{references}
+\end{document}
