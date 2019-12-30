@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.10.13)  19 DEC 2019 11:25
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.10.13)  30 DEC 2019 17:00
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -116,6 +116,18 @@ Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
 \c@subfigure=\count94
 \c@subtable=\count95
 )
+(/usr/share/texlive/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2017/10/31 v2.20.4
+\thm@style=\toks18
+\thm@bodyfont=\toks19
+\thm@headfont=\toks20
+\thm@notefont=\toks21
+\thm@headpunct=\toks22
+\thm@preskip=\skip46
+\thm@postskip=\skip47
+\thm@headsep=\skip48
+\dth@everypar=\toks23
+)
 (/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
 Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
 
@@ -141,7 +153,7 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 (/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
 (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex
-\pgfutil@everybye=\toks18
+\pgfutil@everybye=\toks24
 \pgfutil@tempdima=\dimen128
 \pgfutil@tempdimb=\dimen129
 
@@ -179,12 +191,12 @@ Package graphics Info: Driver file: pdftex.def on input line 99.
 Package: pgfsys 2014/07/09 v3.0.1a (rcs-revision 1.48)
 
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
-\pgfkeys@pathtoks=\toks19
-\pgfkeys@temptoks=\toks20
+\pgfkeys@pathtoks=\toks25
+\pgfkeys@temptoks=\toks26
 
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeysfiltered.code.t
 ex
-\pgfkeys@tmptoks=\toks21
+\pgfkeys@tmptoks=\toks27
 ))
 \pgf@x=\dimen132
 \pgf@y=\dimen133
@@ -200,9 +212,9 @@ ex
 \c@pgf@countb=\count97
 \c@pgf@countc=\count98
 \c@pgf@countd=\count99
-\t@pgf@toka=\toks22
-\t@pgf@tokb=\toks23
-\t@pgf@tokc=\toks24
+\t@pgf@toka=\toks28
+\t@pgf@tokb=\toks29
+\t@pgf@tokc=\toks30
  (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
 File: pgf.cfg 2008/05/14  (rcs-revision 1.7)
 )
@@ -235,9 +247,9 @@ Package: pgfcore 2010/04/11 v3.0.1a (rcs-revision 1.7)
 \pgfmath@dimen=\dimen140
 \pgfmath@count=\count102
 \pgfmath@box=\box27
-\pgfmath@toks=\toks25
-\pgfmath@stack@operand=\toks26
-\pgfmath@stack@operation=\toks27
+\pgfmath@toks=\toks31
+\pgfmath@stack@operand=\toks32
+\pgfmath@stack@operation=\toks33
 )
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code
@@ -376,8 +388,8 @@ Package: pgffor 2013/12/13 v3.0.1a (rcs-revision 1.25)
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)
 \pgffor@iter=\dimen167
 \pgffor@skip=\dimen168
-\pgffor@stack=\toks28
-\pgffor@toks=\toks29
+\pgffor@stack=\toks34
+\pgffor@toks=\toks35
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
 Package: tikz 2015/08/07 v3.0.1a (rcs-revision 1.151)
@@ -502,14 +514,14 @@ Loading kernel: messages; fonts; allocations: state,
 \D@c=\dimen179
 \L@c=\dimen180
 \R@c=\dimen181
-\Edge@c=\toks30
+\Edge@c=\toks36
 \X@p=\dimen182
 \Y@p=\dimen183
 \U@p=\dimen184
 \D@p=\dimen185
 \L@p=\dimen186
 \R@p=\dimen187
-\Edge@p=\toks31
+\Edge@p=\toks37
 \X@origin=\dimen188
 \Y@origin=\dimen189
 \X@xbase=\dimen190
@@ -537,10 +549,10 @@ Loading kernel: messages; fonts; allocations: state,
 \quotPTK@=\dimen259
 
 utility macros; pictures: \xy, positions,
-\swaptoks@@=\toks32
+\swaptoks@@=\toks38
 \connectobjectbox@@=\box59
  objects,
-\styletoks@=\toks33
+\styletoks@=\toks39
  decorations;
 kernel objects: directionals, circles, text; options; algorithms: directions,
 edges, connections;  Xy-pic loaded)
@@ -554,7 +566,7 @@ Package: xy 2013/10/06 Xy-pic version 3.8.9
 (/usr/share/texlive/texmf-dist/tex/generic/xypic/xycurve.tex
  Xy-pic option: Curve and Spline extension v.3.12 curve,
 \crv@cnt@=\count119
-\crvpts@=\toks34
+\crvpts@=\toks40
 \splinebox@=\box60
 \splineval@=\dimen260
 \splinedepth@=\dimen261
@@ -581,8 +593,8 @@ Package: xy 2013/10/06 Xy-pic version 3.8.9
  Xy-pic option: Matrix feature v.3.14
 \Row=\count120
 \Col=\count121
-\queue@=\toks35
-\queue@@=\toks36
+\queue@=\toks41
+\queue@@=\toks42
 \qcount@=\count122
 \qcount@@=\count123
 \matrixsize@=\count124
@@ -604,39 +616,91 @@ Xy-pic pdf driver: `rotate' extension support
 (/usr/share/texlive/texmf-dist/tex/generic/xypic/xypdf-ro.tex loaded) loaded))
 (/usr/share/texlive/texmf-dist/tex/latex/cleveref/cleveref.sty
 Package: cleveref 2018/02/08 v0.21.1 Intelligent cross-referencing
+Package cleveref Info: `amsthm' support loaded on input line 2957.
 )
-\c@commentctr=\count125
+\c@mydef=\count125
+\c@thm=\count126
+\c@lemma=\count127
+\c@commentctr=\count128
+ (dist/index.aux
 
-No file index.aux.
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+
+LaTeX Warning: Label `nolabel' multiply defined.
+
+
+LaTeX Warning: Label `nolabel@cref' multiply defined.
+
+)
 \openout1 = `index.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 250.
-LaTeX Font Info:    ... okay on input line 250.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 258.
+LaTeX Font Info:    ... okay on input line 258.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+ (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count126
+\scratchcounter=\count129
 \scratchdimen=\dimen266
 \scratchbox=\box61
-\nofMPsegments=\count127
-\nofMParguments=\count128
-\everyMPshowfont=\toks37
-\MPscratchCnt=\count129
+\nofMPsegments=\count130
+\nofMParguments=\count131
+\everyMPshowfont=\toks43
+\MPscratchCnt=\count132
 \MPscratchDim=\dimen267
-\MPnumerator=\count130
-\makeMPintoPDFobject=\count131
-\everyMPtoPDFconversion=\toks38
+\MPnumerator=\count133
+\makeMPintoPDFobject=\count134
+\everyMPtoPDFconversion=\toks44
 ) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
@@ -690,43 +754,82 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 ABD: EveryShipout initializing macros
-LaTeX Font Info:    Try loading font information for U+msa on input line 250.
+LaTeX Font Info:    Try loading font information for U+msa on input line 258.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 250.
+LaTeX Font Info:    Try loading font information for U+msb on input line 258.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+stmry on input line 250.
+LaTeX Font Info:    Try loading font information for U+stmry on input line 258.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/stmaryrd/Ustmry.fd)
-Package xypdf Info: Line width: 0.39998pt on input line 250.
+Package xypdf Info: Line width: 0.39998pt on input line 258.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 304.
 
-No file index.bbl.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 304.
+\openout3 = `index.ptb'.
+
+
+Overfull \hbox (15.0pt too wide) in paragraph at lines 324--338
+[]$[]$ 
+ []
+
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (dist/index.aux) ) 
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+\openout3 = `index.ptb'.
+
+
+Overfull \hbox (15.0pt too wide) in paragraph at lines 350--364
+[]$[]$ 
+ []
+
+\openout3 = `index.ptb'.
+
+
+Overfull \hbox (15.0pt too wide) in paragraph at lines 369--379
+[]$[]$ 
+ []
+
+[2]
+No file index.bbl.
+[3] (dist/index.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 19578 strings out of 494847
- 387775 string characters out of 6179079
- 494700 words of memory out of 5000000
- 22527 multiletter control sequences out of 15000+600000
- 13561 words of font info for 58 fonts, out of 8000000 for 9000
+ 19765 strings out of 494847
+ 390286 string characters out of 6179079
+ 502912 words of memory out of 5000000
+ 22698 multiletter control sequences out of 15000+600000
+ 15891 words of font info for 65 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 55i,6n,67p,3220b,189s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/sh
-are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on dist/index.pdf (1 page, 41309 bytes).
+ 55i,7n,67p,3220b,251s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/te
+xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmti10.pfb>
+Output written on dist/index.pdf (3 pages, 130373 bytes).
 PDF statistics:
- 27 PDF objects out of 1000 (max. 8388607)
- 19 compressed objects within 1 object stream
+ 57 PDF objects out of 1000 (max. 8388607)
+ 41 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -7,6 +7,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% Our packages
+\usepackage{amsthm}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{shapes}
@@ -19,6 +20,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% Our defs
+
+\theoremstyle{definition}
+\newtheorem{mydef}{Definition}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{lemma}{Lemma}
 
 %% Drawing patches using tikz
 \newenvironment{twothreetree}{%
