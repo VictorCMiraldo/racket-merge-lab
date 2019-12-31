@@ -292,6 +292,21 @@
 %
 % Body
 %
+\newcommand{\termsof}[1]{\ensuremath{\mathcal{T}_{#1}}}
+\newcommand{\patch}[2]{\ensuremath{#1 \mapsto #2}}
+\newcommand{\pdel}[1]{\ensuremath{\mathbf{del}\;{#1}}}
+\newcommand{\pins}[1]{\ensuremath{\mathbf{ins}\;{#1}}}
+\newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
+\newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
+\newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
+\newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
+\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
+
+
+
+
+
+
 \section{Introduction}
 
 Edit scripts are bad.
@@ -311,15 +326,15 @@ We propose an extensional approach.
 
 \victor{Primer on unification and substitution and term algebras}
 
-\section{Extensional Patches}
+\section{Algebra of Extensional Patches}
 
   Instead of linearizing trees and relying on very local operations
-such as insertion, deletions and copying of a single constructor, 
-we can take the extensional look over patches and describe them by a mapping
-between sets of trees. Lets look at a simple patch that deletes
-the left subtree of a binary tree -- which
-can be described by the \ensuremath{\HSCon{Del}\;\HSCon{Bin}\;\HSSpecial{(}\HSCon{Del}\;\HS{\dots}\;\HSSpecial{(}\HSCon{Cpy}\;\HS{\dots}\;\HSCon{Nil}\HSSpecial{)}\HSSpecial{)}} edit script.
-A Haskell function that performs that operation can be given by:
+such as insertion, deletions and copying of a single constructor, we
+can take an extensional look over patches. We can describe patches
+trough a partial map directly. Take the patch that deletes
+the left subtree of a binary tree -- which can be described by the
+\ensuremath{\HSCon{Del}\;\HSCon{Bin}\;\HSSpecial{(}\HSCon{Del}\;\HS{\dots}\;\HSSpecial{(}\HSCon{Cpy}\;\HS{\dots}\;\HSCon{Nil}\HSSpecial{)}\HSSpecial{)}} edit script.  A Haskell function
+that performs that operation can be given by:
 
 \begin{myhs}
 \begingroup\par\noindent\advance\leftskip\mathindent\(
@@ -336,16 +351,17 @@ A Haskell function that performs that operation can be given by:
 \)\par\noindent\endgroup\resethooks
 \end{myhs}
 
-  The \ensuremath{\HSVar{delL}} function specifies a domain -- those trees with a \ensuremath{\HSCon{Bin}} at their root --
-and a transformation, which forgets the root and its left child.
+  The \ensuremath{\HSVar{delL}} function specifies a domain -- those trees with a \ensuremath{\HSCon{Bin}}
+at their root -- and a transformation, which forgets the root and its
+left child, returning only the right child of the root. One way of
+representing this is by \ensuremath{\patch{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}{\HSVar{x}}}, where \ensuremath{\HSVar{x}} and \ensuremath{\HSVar{y}} are variables,
+which are bound on the \emph{deletion context} of the patch and
+used on the \emph{insertion context} of the patch.
 
-
-\victor{still deciding the order of examples here... this is messy; pardon}
-
-
-Take the patch that swaps the children of a binary tree
--- which is already impossible to represent with edit-scripts. It could be represented
-by a Haskell function \ensuremath{\HSVar{swap}}:
+  Let us look at another example: the patch that swaps the children of
+a binary tree -- which is already impossible to represent with
+edit-scripts. It could be represented by a Haskell function below,
+or by \ensuremath{\patch{\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}}{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}}.
 
 \begin{myhs}
 \begingroup\par\noindent\advance\leftskip\mathindent\(
@@ -362,102 +378,113 @@ by a Haskell function \ensuremath{\HSVar{swap}}:
 \)\par\noindent\endgroup\resethooks
 \end{myhs}
 
-  This \ensuremath{\HSVar{swap}} function has a pattern, which identifies the domain of
-the function. In our case, we can only swap trees with a \ensuremath{\HSCon{Bin}} constructor
-at the root. That is, \ensuremath{\HSVar{dom}\;\HSVar{swap}} is given by:
+  In the examples above, we have informally described extensional patches
+over a simple \emph{term algebra}, namelly, that of binary trees
+with \ensuremath{\HSCon{Bin}} and \ensuremath{\HT{Lea\!f}}. Next we explore this notion of patches
+for arbitrary term algebras. \victor{and our prototype works for
+mutually recursive bla bla bla} 
 
-\begin{myhs}
+  Because we need the notion of variable to specify our
+deletion and insertion contexts, we will work with the usual
+term algebra, but augmented with a countable set $V$ of variables.
+That is, let $L$ be a language, we denote by $\termsof{L}$ the set of
+terms over $L$ augmented with the set $V$ of variables. For
+any $t \in \termsof{L}$, $\vars{t} \subseteq V$ denotes the
+variables in $t$. When $\vars{t} = \emptyset$, we say $t$
+is a \emph{term}.
+
+\begin{mydef}[Patch]
+  Let $L$ be a language, a patch \ensuremath{\HSVar{p}} consists in any element of
+$\termsof{L} \times \termsof{L}$ such that \ensuremath{\vars{\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}\;\subseteq\;\HSSpecial{(}\vars{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}}\HSSpecial{)}}, where \ensuremath{\pdel{\HSVar{p}}} and \ensuremath{\pins{\HSVar{p}}} ared \ensuremath{\pins{\HSVar{p}}} and second are
+the first and second projections, respectivelly.
+Given two elements \ensuremath{\HSVar{d}\HSSpecial{,}\HSVar{i}} of $\termsof{L}$, we denote a patch
+as \ensuremath{\patch{\HSVar{d}}{\HSVar{i}}}.
+\end{mydef}
+
+  As usual when working with binders and variables, we assume that
+variable name clashes between two patches. Application of a patch to a
+term is easily defined with the help of unification.  Take the \ensuremath{\HSVar{swap}}
+patch, \ensuremath{\patch{\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}}{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}}, and the tern \ensuremath{\HSVar{t}\HSSym{\mathrel{=}}\HSCon{Bin}\;\HT{Lea\!f}\;\HSSpecial{(}\HSCon{Bin}\;\HT{Lea\!f}\;\HT{Lea\!f}\HSSpecial{)}}. First we must unify the deletion context wiht \ensuremath{\HSVar{t}}, which
+yields the substitution \ensuremath{\HSVar{x}\HSSym{\mathrel{=}}\HT{Lea\!f}\HSSym{\mathrel{\wedge}}\HSVar{y}\HSSym{\mathrel{=}}\HSCon{Bin}\;\HT{Lea\!f}\;\HT{Lea\!f}}. To get
+the result, we must apply this substitution to the insertion context
+of our patch. 
+
+\begin{mydef}[Application] 
+  Let $p$ be a patch over $\termsof{L}$ and $t$ a term over $\termsof{L}$,
+we say \ensuremath{\HSVar{p}} applies to \ensuremath{\HSVar{t}} whenever \ensuremath{\pdel{\HSVar{p}}} unifies with \ensuremath{\HSVar{t}}. 
+Let \ensuremath{\HV{\alpha}} be such substitution, the result of the application is 
+\ensuremath{\HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}. We define the relation \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}} to captures exactly that.
 \begingroup\par\noindent\advance\leftskip\mathindent\(
 \begin{pboxed}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\HSVar{dom}\;\HSVar{swap}\HSSym{\mathrel{=}}\HSSpecial{\HSSym{\{\mskip1.5mu} }\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}\HSSym{\mid} \HSVar{x}\HSSym{\in} \HSCon{Tree}\HSSpecial{,}\HSVar{y}\HSSym{\in} \HSCon{Tree}\HSSpecial{\HSSym{\mskip1.5mu\}}}{}\<[E]%
+\>[B]{}\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}\triangleq\exists\;\HV{\alpha}\;.\;{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} \cong_{\HV{\alpha}} {\HSVar{t}}\HSSym{\mathrel{\wedge}}\HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HSVar{u}{}\<[E]%
 \ColumnHook
 \end{pboxed}
 \)\par\noindent\endgroup\resethooks
-\end{myhs}
-
-\victor{Onto patches}
-
-\newcommand{\termsof}[1]{\ensuremath{\mathcal{T}_{#1}}}
-\newcommand{\patch}[2]{\ensuremath{#1 \mapsto #2}}
-\newcommand{\pdel}[1]{\ensuremath{{#1}_d}}
-\newcommand{\pins}[1]{\ensuremath{{#1}_i}}
-\newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
-\newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
-\newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
-\newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
-
-\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
-
-
-\begin{mydef}
-  Let $\termsof{L}$ be the term algebra for the language $L$ augmented
-with a countable set $V$ of variables. A patch $p =
-\patch{\pdel{p}}{\pins{p}}$ consists in a pattern, $\pdel{p}$, and an
-expression, $\pins{p}$ --- both elements of $\termsof{L}$ --- such
-that $\vars{\pins{p}} \subseteq \vars{\pdel{p}}$.  We sometimes refer
-to $\pdel{p}$ and $\pins{p}$ as the deletion and insertion contexts of
-$p$.
+We often abuse notation and write \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}} instead of \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}}.
 \end{mydef}
-
-\begin{mydef}
-  We say an element $x \in \termsof{L}$ is a \emph{term} whenever 
-$\vars{x} = \emptyset$.
-\end{mydef}
-
-  The \emph{swap} patch, for example, is represented by \ensuremath{\patch{\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}}{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}}, where \ensuremath{\HSVar{x}} and \ensuremath{\HSVar{y}} are taken from the set $V$ of variables.
-Similarly to working with the $\lambda$-calculus, we
-assume variable names never clash between patches.
-
-\begin{mydef} 
-\victor{application}
-  Let $p$ be a patch over $\termsof{L}$ and $x$ a term over $\termsof{L}$,
-we say $p$ applies to $x$ whenever $\pdel{p}$ unifies with $x$. Let
-$\alpha$ be such substitution, the result of the application is $\alpha\;\pins{p}$.
-
-\[ \app{p}{x} = y \iff \exists \alpha . \alpha\;\pdel{x} = \alpha\;x \wedge \alpha\;\pins{p} = y \]
-\end{mydef}
-
-  The identity patch is simply \ensuremath{\patch{\HSVar{x}}{\HSVar{x}}}. 
-
+ 
 \begin{lemma}
-\victor{correctness of application}
-  For all patch $p$ and term $x$, if $\app{p}{x} = y$ then $y$ is a term.
+For all patch \ensuremath{\HSVar{p}\HSSpecial{,}\HSVar{t}} and \ensuremath{\HSVar{u}}, if \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}}, then
+\ensuremath{\HSVar{u}} is a term, that is, \ensuremath{\vars{\HSVar{u}}\HSSym{\equiv} \HSVar{emptyset}}.
 \end{lemma}
 \begin{proof}
-todo
+  Let \ensuremath{\HV{\alpha}} be the witness of \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}}, we
+know \ensuremath{\HSVar{u}\HSSym{\equiv} \HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}. We must prove that \ensuremath{\HV{\alpha}}
+substitutes all variables in \ensuremath{\pins{\HSVar{p}}} for terms to conclude the proof.
+That is simple considering that \ensuremath{{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} \cong_{\HV{\alpha}} {\HSVar{t}}}, 
+\ensuremath{\vars{\HSVar{t}}\HSSym{\equiv} \HSVar{emptyset}} and \ensuremath{\vars{\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}\;\subseteq\;\HSSpecial{(}\vars{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}}\HSSpecial{)}}.
 \end{proof}
 
-  This notion of application gives rise to an extensional equality of patches.
-We say patches $p$ and $q$ are equal, denoted $p \approx q$, whenever 
-\[ \forall x . (\app{p}{x} = y \iff \app{q}{x} = z) \wedge y = z \]
-It is easy to prove that $\approx$ above gives an equivalence relation.
+  With a notion of application at hand, we can define an extensional
+equality for our patches. We say patches $p$ and $q$ are equal,
+denoted \ensuremath{\HSVar{p}\sim\HSVar{q}}, whenever \ensuremath{\HSSpecial{(}\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}\HSSpecial{)}\;\iff\;\HSSpecial{(}\app{\HSVar{q}}{\HSVar{t}}\;\HSVar{u}\HSSpecial{)}}, for all \ensuremath{\HSVar{t}\HSSpecial{,}\HSVar{u}}. It is easy to prove this gives rise to an equivalence
+relation. Moreover, it correctly identifies patches equal up to
+renaming of variables.
 
-\begin{mydef}
-\victor{composition}
-  Let $p$ and $q$ be patches we say that $p$ and $q$ compose whenever
-$\pdel{p}$ unifies with $\pins{q}$ --- let $\sigma$ be such mgu. 
-Given two patches $p$ and $q$ that compose,
+  The next step in constructing an algebra of patches, is to study
+the composition of patches. \victor{hint at optimality problems?}
+Given patches $p$ and $q$, however, they are not always composable.
+Take \ensuremath{\HSVar{p}\HSSym{\mathrel{=}}\patch{\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}}{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}} and \ensuremath{\HSVar{q}\HSSym{\mathrel{=}}\patch{\HT{Lea\!f}}{\HSCon{Bin}\;\HT{Lea\!f}\;\HT{Lea\!f}}},
+\ensuremath{\after{\HSVar{p}}{\HSVar{q}}} is defined as \ensuremath{\patch{\HT{Lea\!f}}{\HT{Lea\!f}}}, but \ensuremath{\after{\HSVar{q}}{\HSVar{p}}} cannot be defined:
+the result of \ensuremath{\HSVar{p}} has a \ensuremath{\HSCon{Bin}} at its head where \ensuremath{\HSVar{q}} expects a \ensuremath{\HT{Lea\!f}}.
 
-\ensuremath{\after{\HSVar{p}}{\HSVar{q}}\HSSym{\mathrel{=}}\patch{\HSVar{sigma}\;\pdel{\HSVar{q}}}{\HSVar{sigma}\;\pins{\HSVar{p}}}}
+\begin{mydef}[Composition]
+Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be patches, we say \ensuremath{\HSVar{p}} composes with \ensuremath{\HSVar{q}},
+denoted \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}}, whenever \ensuremath{\pdel{\HSVar{p}}} is unifiable with \ensuremath{\pins{\HSVar{q}}}.
+Assume \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}} and let \ensuremath{\sigma} be the substituion witnessing
+the unification above. We define \ensuremath{\after{\HSVar{p}}{\HSVar{q}}} as:
+
+\begingroup\par\noindent\advance\leftskip\mathindent\(
+\begin{pboxed}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\after{\HSVar{p}}{\HSVar{q}}\triangleq\patch{\sigma\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}}{\sigma\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}{}\<[E]%
+\ColumnHook
+\end{pboxed}
+\)\par\noindent\endgroup\resethooks
 \end{mydef}
 
 \begin{lemma}
-\victor{composition is correct}
-  Given $p$ and $q$ composable patches, \ensuremath{\app{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{x}}\HSSym{\mathrel{=}}\HSVar{z}} iff \ensuremath{\app{\HSVar{q}}{\HSVar{x}}\HSSym{\mathrel{=}}\HSVar{y}\HSSym{\mathrel{\wedge}}\app{\HSVar{p}}{\HSVar{y}}\HSSym{\mathrel{=}}\HSVar{z}}.
+  Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be patches such that \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}}. Then,
+for all \ensuremath{\HSVar{t}\HSSpecial{,}\HSVar{u}}, \ensuremath{\app{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}} if and only if \ensuremath{\app{\HSVar{q}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{w}\HSSym{\mathrel{\wedge}}\app{\HSVar{p}}{\HSVar{w}}\HSSym{\mathrel{=}}\HSVar{u}}, for some \ensuremath{\HSVar{w}}. 
 \end{lemma}
 \begin{proof}
-transcribe from notebook
+todo: transcribe from notebook
 \end{proof}
 
 \begin{lemma}
 For any patch $p$, the identity patch \ensuremath{\patch{\HSVar{x}}{\HSVar{x}}} is a left and right
-identity to patch composition.
+identity to patch composition, that is, \ensuremath{\after{\HSVar{p}}{\HSSpecial{(}\patch{\HSVar{x}}{\HSVar{x}}\HSSpecial{)}}\sim\HSVar{p}} and
+\ensuremath{\after{\HSSpecial{(}\patch{\HSVar{x}}{\HSVar{x}}\HSSpecial{)}}{\HSVar{p}}\sim\HSVar{p}}.
 \end{lemma}
 \begin{proof}
 trivial
 \end{proof}
+
+  Before tackling associativity of composition, we must prove
+two auxiliary lemmas, below.
 
 \begin{lemma}
   Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
@@ -477,19 +504,53 @@ and similarly for $\pins{p}$.
 transcribe
 \end{proof}
 
-  With these lemmas at hand, we can prove associativity of our
-composition operator.
-
+  Finally, we can prove the associativity of our composition operation.
+  
 \begin{lemma}
 Let $p$ and $q$ be composable patches. Let $r$ be a patch composable
 with \ensuremath{\after{\HSVar{p}}{\HSVar{q}}}. Then, $q$ and $r$ are composable and $p$ and \ensuremath{\after{\HSVar{q}}{\HSVar{r}}}
-are composable. Moreover, \ensuremath{\after{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{r}}\approx\after{\HSVar{p}}{\HSSpecial{(}\after{\HSVar{r}}{\HSVar{q}}\HSSpecial{)}}}
+are composable. Moreover, \ensuremath{\after{\HSSpecial{(}\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}\HSSpecial{)}}{\HSVar{r}}\sim\after{\HSVar{p}}{\HSSpecial{(}\HSSpecial{(}\after{\HSVar{r}}{\HSVar{q}}\HSSpecial{)}\HSSpecial{)}}}
 \end{lemma}
 \begin{proof}
 transcribe from notebook; somewhat long.
 \end{proof}
 
+\victor{I still have to talk about inverses, which is just swapping the deletion and insertion cotexts.}
 
+  From these results, it follows that patches form a grupoid structure
+over $\termsof{L}$, for any $L$.
+
+  Yet, from a pratical standpoint, we composition might obfuscate
+potential shares between the source and destination tree.
+
+\section{Merging}
+
+\victor{
+\begin{itemize}
+\item This construction of patches admits a merge operator.
+\end{itemize}
+}
+
+\section{Experiments}
+
+\victor{We are up to 30\% success rate on the dataset! yay}
+
+\section{Discussion}
+
+\subsection{The Case Against \emph{cost}}
+
+\victor{\begin{itemize}
+\item Defining the \emph{best} patch is difficult
+\item The point of the cost, in ES, is to eliminate 
+redundant operations. \ensuremath{\HSVar{cost}\;\HSSpecial{(}\HSVar{del}\;\HSVar{c}\;\HSSpecial{(}\HSVar{ins}\;\HSVar{c}\HSSpecial{)}\HSSpecial{)}\HSSym{\mathrel{=}}\HSNumeral{2}}
+whereas \ensuremath{\HSVar{cost}\;\HSSpecial{(}\HSVar{cpy}\;\HSVar{c}\HSSpecial{)}\HSSym{\mathrel{=}}\HSNumeral{0}}
+\item In our case, redundant copies might be present
+as a byproduct of enforcing the sharing of subtrees.
+\item From our experimental results, it seems that
+patches that copy larger subtrees, closer to the root,
+merge better. Hence, this could better guide a notionof optimality
+\item We leave this as future work
+\end{itemize}}
 
 %%% Local Variables:
 %%% mode: latex

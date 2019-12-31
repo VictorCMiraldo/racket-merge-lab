@@ -1,3 +1,32 @@
+\newcommand{\termsof}[1]{\ensuremath{\mathcal{T}_{#1}}}
+\newcommand{\patch}[2]{\ensuremath{#1 \mapsto #2}}
+\newcommand{\pdel}[1]{\ensuremath{\mathbf{del}\;{#1}}}
+\newcommand{\pins}[1]{\ensuremath{\mathbf{ins}\;{#1}}}
+\newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
+\newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
+\newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
+\newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
+\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
+
+
+%format patch (x) (y) = "\patch{" x "}{" y "}"
+%format pdel x      = "\pdel{" x "}"
+%format pins x     = "\pins{" x "}"
+%format after p q   = "\after{" p "}{" q "}"
+%format app   p x       = "\app{" p "}{" x "}"
+%format vars  x         = "\vars{" x "}"
+%format sub             = "\subseteq"
+%format #= = "\triangleq"
+%format dot = "."
+%format exists = "\exists"
+%format (unifs a x y) = "{" x "} \cong_{" a "} {" y "}"
+%format iff = "\iff"
+%format sigma = "\sigma"
+%format ~ = "\sim"
+
+
+
+
 \section{Introduction}
 
 Edit scripts are bad.
@@ -17,15 +46,15 @@ We propose an extensional approach.
 
 \victor{Primer on unification and substitution and term algebras}
 
-\section{Extensional Patches}
+\section{Algebra of Extensional Patches}
 
   Instead of linearizing trees and relying on very local operations
-such as insertion, deletions and copying of a single constructor, 
-we can take the extensional look over patches and describe them by a mapping
-between sets of trees. Lets look at a simple patch that deletes
-the left subtree of a binary tree -- which
-can be described by the |Del Bin (Del dots (Cpy dots Nil))| edit script.
-A Haskell function that performs that operation can be given by:
+such as insertion, deletions and copying of a single constructor, we
+can take an extensional look over patches. We can describe patches
+trough a partial map directly. Take the patch that deletes
+the left subtree of a binary tree -- which can be described by the
+|Del Bin (Del dots (Cpy dots Nil))| edit script.  A Haskell function
+that performs that operation can be given by:
 
 \begin{myhs}
 \begin{code}
@@ -34,16 +63,17 @@ delL _         = Nothing
 \end{code}
 \end{myhs}
 
-  The |delL| function specifies a domain -- those trees with a |Bin| at their root --
-and a transformation, which forgets the root and its left child.
+  The |delL| function specifies a domain -- those trees with a |Bin|
+at their root -- and a transformation, which forgets the root and its
+left child, returning only the right child of the root. One way of
+representing this is by |patch (Bin y x) x|, where |x| and |y| are variables,
+which are bound on the \emph{deletion context} of the patch and
+used on the \emph{insertion context} of the patch.
 
-
-\victor{still deciding the order of examples here... this is messy; pardon}
-
-
-Take the patch that swaps the children of a binary tree
--- which is already impossible to represent with edit-scripts. It could be represented
-by a Haskell function |swap|:
+  Let us look at another example: the patch that swaps the children of
+a binary tree -- which is already impossible to represent with
+edit-scripts. It could be represented by a Haskell function below,
+or by |patch (Bin x y) (Bin y x)|.
 
 \begin{myhs}
 \begin{code}
@@ -52,102 +82,107 @@ swap _         = Nothing
 \end{code}
 \end{myhs}
 
-  This |swap| function has a pattern, which identifies the domain of
-the function. In our case, we can only swap trees with a |Bin| constructor
-at the root. That is, |dom swap| is given by:
+  In the examples above, we have informally described extensional patches
+over a simple \emph{term algebra}, namelly, that of binary trees
+with |Bin| and |Leaf|. Next we explore this notion of patches
+for arbitrary term algebras. \victor{and our prototype works for
+mutually recursive bla bla bla} 
 
-\begin{myhs}
+  Because we need the notion of variable to specify our
+deletion and insertion contexts, we will work with the usual
+term algebra, but augmented with a countable set $V$ of variables.
+That is, let $L$ be a language, we denote by $\termsof{L}$ the set of
+terms over $L$ augmented with the set $V$ of variables. For
+any $t \in \termsof{L}$, $\vars{t} \subseteq V$ denotes the
+variables in $t$. When $\vars{t} = \emptyset$, we say $t$
+is a \emph{term}.
+
+\begin{mydef}[Patch]
+  Let $L$ be a language, a patch |p| consists in any element of
+$\termsof{L} \times \termsof{L}$ such that |vars (pins p) sub (vars
+(pdel p))|, where |pdel p| and |pins p| ared |pins p| and second are
+the first and second projections, respectivelly.
+Given two elements |d , i| of $\termsof{L}$, we denote a patch
+as |patch d i|.
+\end{mydef}
+
+  As usual when working with binders and variables, we assume that
+variable name clashes between two patches. Application of a patch to a
+term is easily defined with the help of unification.  Take the |swap|
+patch, |patch (Bin x y) (Bin y x)|, and the tern |t = Bin Leaf (Bin Leaf
+Leaf)|. First we must unify the deletion context wiht |t|, which
+yields the substitution |x = Leaf && y = Bin Leaf Leaf|. To get
+the result, we must apply this substitution to the insertion context
+of our patch. 
+
+\begin{mydef}[Application] 
+  Let $p$ be a patch over $\termsof{L}$ and $t$ a term over $\termsof{L}$,
+we say |p| applies to |t| whenever |pdel p| unifies with |t|. 
+Let |alpha| be such substitution, the result of the application is 
+|alpha (pins p)|. We define the relation |app p t u| to captures exactly that.
 \begin{code}
-dom swap = { Bin x y | x `elem` Tree , y `elem` Tree }
+app p t u #= exists alpha dot (unifs alpha (pdel p) t) && alpha (pins p) == u
 \end{code}
-\end{myhs}
-
-\newcommand{\termsof}[1]{\ensuremath{\mathcal{T}_{#1}}}
-\newcommand{\patch}[2]{\ensuremath{#1 \mapsto #2}}
-\newcommand{\pdel}[1]{\ensuremath{{#1}_d}}
-\newcommand{\pins}[1]{\ensuremath{{#1}_i}}
-\newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
-\newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
-\newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
-\newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
-
-\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
-
-%format (patch (x) (y)) = "\patch{" x "}{" y "}"
-%format (pdel (x))      = "\pdel{" x "}"
-%format (pins (x))      = "\pins{" x "}"
-%format after (p) (q)   = "\after{" p "}{" q "}"
-%format app   p x       = "\app{" p "}{" x "}"
-
-\begin{mydef}
-  Let $\termsof{L}$ be the term algebra for the language $L$ augmented
-with a countable set $V$ of variables. A patch $p =
-\patch{\pdel{p}}{\pins{p}}$ consists in a pattern, $\pdel{p}$, and an
-expression, $\pins{p}$ --- both elements of $\termsof{L}$ --- such
-that $\vars{\pins{p}} \subseteq \vars{\pdel{p}}$.  We sometimes refer
-to $\pdel{p}$ and $\pins{p}$ as the deletion and insertion contexts of
-$p$.
+We often abuse notation and write |app p t = u| instead of |app p t u|.
 \end{mydef}
-
-\begin{mydef}
-  We say an element $x \in \termsof{L}$ is a \emph{term} whenever 
-$\vars{x} = \emptyset$.
-\end{mydef}
-
-  The \emph{swap} patch, for example, is represented by |patch (Bin x
-y) (Bin y x)|, where |x| and |y| are taken from the set $V$ of variables.
-Similarly to working with the $\lambda$-calculus, we
-assume variable names never clash between patches.
-
-\begin{mydef} 
-\victor{application}
-  Let $p$ be a patch over $\termsof{L}$ and $x$ a term over $\termsof{L}$,
-we say $p$ applies to $x$ whenever $\pdel{p}$ unifies with $x$. Let
-$\alpha$ be such substitution, the result of the application is $\alpha\;\pins{p}$.
-
-\[ \app{p}{x} = y \iff \exists \alpha . \alpha\;\pdel{x} = \alpha\;x \wedge \alpha\;\pins{p} = y \]
-\end{mydef}
-
-  The identity patch is simply |patch x x|. 
-
+ 
 \begin{lemma}
-\victor{correctness of application}
-  For all patch $p$ and term $x$, if $\app{p}{x} = y$ then $y$ is a term.
+For all patch |p, t| and |u|, if |app p t = u|, then
+|u| is a term, that is, |vars u == emptyset|.
 \end{lemma}
 \begin{proof}
-todo
+  Let |alpha| be the witness of |app p t u|, we
+know |u == alpha (pins p)|. We must prove that |alpha|
+substitutes all variables in |pins p| for terms to conclude the proof.
+That is simple considering that |unifs alpha (pdel p) t|, 
+|vars t == emptyset| and |vars (pins p) sub (vars (pdel p))|.
 \end{proof}
 
-%format ~~ = "\approx"
-  This notion of application gives rise to an extensional equality of patches.
-We say patches $p$ and $q$ are equal, denoted $p \approx q$, whenever 
-\[ \forall x . (\app{p}{x} = y \iff \app{q}{x} = z) \wedge y = z \]
-It is easy to prove that $\approx$ above gives an equivalence relation.
+  With a notion of application at hand, we can define an extensional
+equality for our patches. We say patches $p$ and $q$ are equal,
+denoted |p ~ q|, whenever |(app p t u) iff (app q t u)|, for all |t,
+u|. It is easy to prove this gives rise to an equivalence
+relation. Moreover, it correctly identifies patches equal up to
+renaming of variables.
 
-\begin{mydef}
-\victor{composition}
-  Let $p$ and $q$ be patches we say that $p$ and $q$ compose whenever
-$\pdel{p}$ unifies with $\pins{q}$ --- let $\sigma$ be such mgu. 
-Given two patches $p$ and $q$ that compose,
+  The next step in constructing an algebra of patches, is to study
+the composition of patches. \victor{hint at optimality problems?}
+Given patches $p$ and $q$, however, they are not always composable.
+Take |p = patch (Bin x y) (Bin y x)| and |q = patch Leaf (Bin Leaf Leaf)|,
+|after p q| is defined as |patch Leaf Leaf|, but |after q p| cannot be defined:
+the result of |p| has a |Bin| at its head where |q| expects a |Leaf|.
 
-| after p q = patch (sigma (pdel q)) (sigma (pins p))|
+\begin{mydef}[Composition]
+Let |p| and |q| be patches, we say |p| composes with |q|,
+denoted |comp p q|, whenever |pdel p| is unifiable with |pins q|.
+Assume |comp p q| and let |sigma| be the substituion witnessing
+the unification above. We define |after p q| as:
+
+\begin{code}
+after p q #= patch (sigma (pdel q)) (sigma (pins p))
+\end{code}
 \end{mydef}
 
 \begin{lemma}
-\victor{composition is correct}
-  Given $p$ and $q$ composable patches, |app (after p q) x = z| iff |app q x = y && app p y = z|.
+  Let |p| and |q| be patches such that |comp p q|. Then,
+for all |t, u|, |app (after p q) t = u| if and only if |app q t = w &&
+app p w = u|, for some |w|. 
 \end{lemma}
 \begin{proof}
-transcribe from notebook
+todo: transcribe from notebook
 \end{proof}
 
 \begin{lemma}
 For any patch $p$, the identity patch |patch x x| is a left and right
-identity to patch composition.
+identity to patch composition, that is, |after p (patch x x) ~ p| and
+|after (patch x x) p ~ p|.
 \end{lemma}
 \begin{proof}
 trivial
 \end{proof}
+
+  Before tackling associativity of composition, we must prove
+two auxiliary lemmas, below.
 
 \begin{lemma}
   Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
@@ -167,13 +202,12 @@ and similarly for $\pins{p}$.
 transcribe
 \end{proof}
 
-  With these lemmas at hand, we can prove associativity of our
-composition operator.
-
+  Finally, we can prove the associativity of our composition operation.
+  
 \begin{lemma}
 Let $p$ and $q$ be composable patches. Let $r$ be a patch composable
 with |after p q|. Then, $q$ and $r$ are composable and $p$ and |after q r|
-are composable. Moreover, |after ((after p q)) r ~~ after p ((after r q))|
+are composable. Moreover, |after ((after p q)) r ~ after p ((after r q))|
 \end{lemma}
 \begin{proof}
 transcribe from notebook; somewhat long.
