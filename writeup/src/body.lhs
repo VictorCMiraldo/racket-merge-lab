@@ -50,8 +50,8 @@ We propose an extensional approach.
 
   Instead of linearizing trees and relying on very local operations
 such as insertion, deletions and copying of a single constructor, we
-can take an extensional look over patches. We can describe patches
-trough a partial map directly. Take the patch that deletes
+can take an extensional look over patches: describing patches
+directly as a partial map. Take the patch that deletes
 the left subtree of a binary tree -- which can be described by the
 |Del Bin (Del dots (Cpy dots Nil))| edit script.  A Haskell function
 that performs that operation can be given by:
@@ -69,6 +69,9 @@ left child, returning only the right child of the root. One way of
 representing this is by |patch (Bin y x) x|, where |x| and |y| are variables,
 which are bound on the \emph{deletion context} of the patch and
 used on the \emph{insertion context} of the patch.
+\victor{the ES variant fixes the left subtree; we can make it
+in such a way that we don't... I need to really figure the 
+details of this before writing it up though.}
 
   Let us look at another example: the patch that swaps the children of
 a binary tree -- which is already impossible to represent with
@@ -85,8 +88,9 @@ swap _         = Nothing
   In the examples above, we have informally described extensional patches
 over a simple \emph{term algebra}, namelly, that of binary trees
 with |Bin| and |Leaf|. Next we explore this notion of patches
-for arbitrary term algebras. \victor{and our prototype works for
-mutually recursive bla bla bla} 
+for arbitrary term algebras and, in the remainder of the section,
+discuss a composition and inverse notion that gives rise to
+a grupoid structure.
 
   Because we need the notion of variable to specify our
 deletion and insertion contexts, we will work with the usual
@@ -234,6 +238,11 @@ potential shares between the source and destination tree.
 \victor{We are up to 30\% success rate on the dataset! yay}
 
 \section{Discussion}
+
+\subsection{The Case Against Inverses}
+
+\victor{Mimram dislikes inverses in the theory, they remove the
+ability to use model merges through pushouts}
 
 \subsection{The Case Against \emph{cost}}
 
