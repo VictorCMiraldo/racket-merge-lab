@@ -4,25 +4,32 @@
 \newcommand{\pins}[1]{\ensuremath{\mathbf{ins}\;{#1}}}
 \newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
 \newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
+\newcommand{\comp}[2]{\ensuremath{\mathbf{comp}\;#1\;#2}}
 \newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
 \newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
-\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
+\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\bullet} #2}}
 
 
 %format patch (x) (y) = "\patch{" x "}{" y "}"
-%format pdel x      = "\pdel{" x "}"
-%format pins x     = "\pins{" x "}"
-%format after p q   = "\after{" p "}{" q "}"
-%format app   p x       = "\app{" p "}{" x "}"
-%format vars  x         = "\vars{" x "}"
-%format sub             = "\subseteq"
-%format #= = "\triangleq"
-%format dot = "."
-%format exists = "\exists"
+%format pdel x        = "\pdel{" x "}"
+%format pins x        = "\pins{" x "}"
+%format after p q     = "\after{" p "}{" q "}"
+%format app   p x     = "\app{" p "}{" x "}"
+%format comp  p x     = "\comp{" p "}{" x "}"
+%format vars  x       = "\vars{" x "}"
+%format sub           = "\subseteq"
+%format #=            = "\triangleq"
+%format dot           = "."
+%format exists        = "\exists"
 %format (unifs a x y) = "{" x "} \cong_{" a "} {" y "}"
-%format iff = "\iff"
-%format sigma = "\sigma"
-%format ~ = "\sim"
+%format iff           = "\iff"
+%format sigma         = "\sigma"
+%format gamma         = "\gamma"
+%format ~             = "\sim"
+%format emptyset      = "\emptyset"
+%format sigmaP = "\sigma_p"
+%format sigmaQ = "\sigma_q"
+%format union  = "\cup"
 
 
 
@@ -125,21 +132,23 @@ we say |p| applies to |t| whenever |pdel p| unifies with |t|.
 Let |alpha| be such substitution, the result of the application is 
 |alpha (pins p)|. We define the relation |app p t u| to captures exactly that.
 \begin{code}
-app p t u #= exists alpha dot (unifs alpha (pdel p) t) && alpha (pins p) == u
+app p t u #= exists alpha dot (alpha (pdel p) == alpha t) && alpha (pins p) == u
 \end{code}
 We often abuse notation and write |app p t = u| instead of |app p t u|.
 \end{mydef}
  
 \begin{lemma}
-For all patch |p, t| and |u|, if |app p t = u|, then
+For all patch |p|, term |t| and |u|$\in \termsof{L}$, if |app p t = u|, then
 |u| is a term, that is, |vars u == emptyset|.
 \end{lemma}
 \begin{proof}
   Let |alpha| be the witness of |app p t u|, we
 know |u == alpha (pins p)|. We must prove that |alpha|
 substitutes all variables in |pins p| for terms to conclude the proof.
-That is simple considering that |unifs alpha (pdel p) t|, 
-|vars t == emptyset| and |vars (pins p) sub (vars (pdel p))|.
+That is simple considering that |alpha (pdel p) == alpha t|, 
+|vars t == emptyset|; this means |alpha| must substitute all
+the variables in |pdel p| for subterms of |t|, which also contain 
+no variables. Finally, since |p| is a patch, we have that and |(vars (pins p)) sub (vars (pdel p))|, which yields that |vars (alpha (pins p)) == emptyset|.
 \end{proof}
 
   With a notion of application at hand, we can define an extensional
@@ -159,13 +168,27 @@ the result of |p| has a |Bin| at its head where |q| expects a |Leaf|.
 \begin{mydef}[Composition]
 Let |p| and |q| be patches, we say |p| composes with |q|,
 denoted |comp p q|, whenever |pdel p| is unifiable with |pins q|.
-Assume |comp p q| and let |sigma| be the substituion witnessing
-the unification above. We define |after p q| as:
+Assume |comp p q| and let |sigma| be the most general unifier
+for |pdel p| and |pins q|. We define |after p q| as:
 
 \begin{code}
 after p q #= patch (sigma (pdel q)) (sigma (pins p))
 \end{code}
 \end{mydef}
+
+  In order to prove correctness of composition, we must rely on our
+assumption that variable names never clash. That is, for any two patches
+|p| and |q|, |vars p intersect vars q == emptyset|. In fact, this
+gives rise to a handy lemma.
+
+\begin{lemma}\label{lemma:disjsupcomp}
+  Let |p| and |q| be composable patches, that is, |comp p q|. Let
+|sigma| be the most general unifier of |pdel p| and |pins q|, witnessing
+|comp p q|. Then, |sigma = sigmaP union sigmaQ| and |sigmaP (pdel p) == sigmaQ (qins q)|.
+\end{lemma}
+\begin{proof}
+Immediate since patches have disjoint sets of variables.
+\end{proof}
 
 \begin{lemma}
   Let |p| and |q| be patches such that |comp p q|. Then,
@@ -173,8 +196,48 @@ for all |t, u|, |app (after p q) t = u| if and only if |app q t = w &&
 app p w = u|, for some |w|. 
 \end{lemma}
 \begin{proof}
-todo: transcribe from notebook
+Let us prove the $(\Leftarrow)$ part of equivalence in detail.
+Assume |exists sigmaP, sigmaQ| such that |sigmaQ (pdel q) == t|
+and |sigmaP (pdel p) == sigmaQ (pins q) == w|. The proof follows
+in four steps.
+
+\begin{enumerate}
+\item |comp p q| can be witnessed by |sigmaP union sigmaQ|.
+\begin{align*}
+      & |(sigmaP union sigmaQ) (pins q) == (sigmaP union sigmaQ) (pdel p)| & \\
+ \iff & |sigmaQ (pins q) == sigmaP (pdel p)| & (\Cref{lemma:disjsupcomp})\\
+ \iff & |hyp|
+\end{align*}
+
+\item Now that we proved |pins q| and |pdel p| are unifiable, let |sigma| be their
+most general unifier. This means there exists |gamma| such that |(sigmaP union sigmaQ) = gamma . sigma|.
+
+\item Next, we prove |sigma (pdel q)| unifies with |t|, in order
+to state |app (after p q) t|. In fact, |gamma| above witnesses this fact.
+\begin{align*}
+      & |gamma t == gamma (sigma (pdel q))| & \\
+ \iff & |gamma t == (gamma . sigma) (pdel q)| & \\
+ \iff & |gamma t == (sigmaP union sigmaQ) (pdel q)| & \\
+ \iff & |gamma t == sigmaQ (pdel q)| & (\Cref{lemma:disjsupcomp}) \\
+ \iff & |t == sigmaQ (pdel q)| & |{t is term }|\\
+ \iff & |hyp|
+\end{align*}
+
+\item Finally we need that |gamma (sigma (pins p)) == sigmaP (pins p)|
+to conclude the lemma. Again, because the supports of
+|sigmaP| and |sigmaQ| are disjoint, |sigmaP (pins p) == (sigmaP union sigmaQ) (pins p)|.
+Step (2) above concludes the proof.
+\end{enumerate}
+
+The $(\Rightarrow)$ side of the equivalence is easier.
+Let |sigma| witness |comp p q| and |gamma| witness |app (after p q) t u|.
+Construct |w| as |(gamma . sigma) (pins q)| and apply analogous reasoning.
 \end{proof}
+
+  With correctness of composition out of the way, we move on to
+proving that our composition operation abides by the same laws
+one would expect out of compositions: they have an identity and
+are associative.
 
 \begin{lemma}
 For any patch $p$, the identity patch |patch x x| is a left and right
@@ -185,25 +248,14 @@ identity to patch composition, that is, |after p (patch x x) ~ p| and
 trivial
 \end{proof}
 
-  Before tackling associativity of composition, we must prove
-two auxiliary lemmas, below.
-
-\begin{lemma}
-  Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
-then there exists $\sigma_p, \sigma_q$ such that $\sigma = \sigma_p \cup \sigma_q$ and
-$\sigma_p \; \pdel{p} = \sigma_q \; \pins{q}$.
+\begin{lemma}\label{lemma:idemp}
+  Let |p| and |q| be composable patches, let |sigma = mgu (pdel p) (pins q)|.
+Then, |sigma| is idempotent in |pdel p| and |pins q|, that is, |sigma (sigma x) = sigma x|
+for |x| to be |pdel p| or |pins q|.
 \end{lemma}
 \begin{proof}
-Immediate since $\vars{p} \cap \vars{q} = \emptyset$.
-\end{proof}
-
-\begin{lemma}
-  Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
-then $\sigma$ is idempodent in $\pdel{q}$ and $\pins{p}$. That is, $\sigma\;\sigma\;\pdel{q} = \sigma\;\pdel{q}$
-and similarly for $\pins{p}$.
-\end{lemma}
-\begin{proof}
-transcribe
+I think it is standard that mgu's are idenpotent; but I proved it in
+my notebook anyway; can transcribe if needed.
 \end{proof}
 
   Finally, we can prove the associativity of our composition operation.
@@ -211,10 +263,26 @@ transcribe
 \begin{lemma}
 Let $p$ and $q$ be composable patches. Let $r$ be a patch composable
 with |after p q|. Then, $q$ and $r$ are composable and $p$ and |after q r|
-are composable. Moreover, |after ((after p q)) r ~ after p ((after r q))|
+are composable.
 \end{lemma}
 \begin{proof}
-transcribe from notebook; somewhat long.
+\victor{transcribe}
+\end{proof}
+  
+\begin{lemma}
+Let $q$ and $r$ be composable patches. Let $p$ be a patch such that
+with |comp p (after q r)|. Then, |comp p q| composable and |comp (after p q) r|.
+\end{lemma}
+\begin{proof}
+\victor{transcribe}
+\end{proof}
+
+  
+\begin{lemma}
+Let |p,q| and |r| be composable patches, |(after (after p q) r) ~ (after p (after q r))|
+\end{lemma}
+\begin{proof}
+\victor{transcribe}
 \end{proof}
 
 \victor{I still have to talk about inverses, which is just swapping the deletion and insertion cotexts.}

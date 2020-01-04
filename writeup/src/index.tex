@@ -113,6 +113,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% Our packages
+\usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{xcolor}
 \usepackage{tikz}
@@ -298,9 +299,10 @@
 \newcommand{\pins}[1]{\ensuremath{\mathbf{ins}\;{#1}}}
 \newcommand{\vars}[1]{\ensuremath{\mathbf{vars}\;#1}}
 \newcommand{\app}[2]{\ensuremath{\mathbf{app}\;#1\;#2}}
+\newcommand{\comp}[2]{\ensuremath{\mathbf{comp}\;#1\;#2}}
 \newcommand{\mgu}{\ensuremath{\mathbf{mgu}}}
 \newcommand{\appAlpha}[3][\alpha]{\ensuremath{\mathbf{app}_{#1}\;#2\;#3}}
-\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\circ} #2}}
+\newcommand{\after}[2]{\ensuremath{#1 \mathbin{\bullet} #2}}
 
 
 
@@ -330,8 +332,8 @@ We propose an extensional approach.
 
   Instead of linearizing trees and relying on very local operations
 such as insertion, deletions and copying of a single constructor, we
-can take an extensional look over patches. We can describe patches
-trough a partial map directly. Take the patch that deletes
+can take an extensional look over patches: describing patches
+directly as a partial map. Take the patch that deletes
 the left subtree of a binary tree -- which can be described by the
 \ensuremath{\HSCon{Del}\;\HSCon{Bin}\;\HSSpecial{(}\HSCon{Del}\;\HS{\dots}\;\HSSpecial{(}\HSCon{Cpy}\;\HS{\dots}\;\HSCon{Nil}\HSSpecial{)}\HSSpecial{)}} edit script.  A Haskell function
 that performs that operation can be given by:
@@ -357,6 +359,9 @@ left child, returning only the right child of the root. One way of
 representing this is by \ensuremath{\patch{\HSCon{Bin}\;\HSVar{y}\;\HSVar{x}}{\HSVar{x}}}, where \ensuremath{\HSVar{x}} and \ensuremath{\HSVar{y}} are variables,
 which are bound on the \emph{deletion context} of the patch and
 used on the \emph{insertion context} of the patch.
+\victor{the ES variant fixes the left subtree; we can make it
+in such a way that we don't... I need to really figure the 
+details of this before writing it up though.}
 
   Let us look at another example: the patch that swaps the children of
 a binary tree -- which is already impossible to represent with
@@ -381,8 +386,9 @@ or by \ensuremath{\patch{\HSCon{Bin}\;\HSVar{x}\;\HSVar{y}}{\HSCon{Bin}\;\HSVar{
   In the examples above, we have informally described extensional patches
 over a simple \emph{term algebra}, namelly, that of binary trees
 with \ensuremath{\HSCon{Bin}} and \ensuremath{\HT{Lea\!f}}. Next we explore this notion of patches
-for arbitrary term algebras. \victor{and our prototype works for
-mutually recursive bla bla bla} 
+for arbitrary term algebras and, in the remainder of the section,
+discuss a composition and inverse notion that gives rise to
+a grupoid structure.
 
   Because we need the notion of variable to specify our
 deletion and insertion contexts, we will work with the usual
@@ -418,7 +424,7 @@ Let \ensuremath{\HV{\alpha}} be such substitution, the result of the application
 \begin{pboxed}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}\triangleq\exists\;\HV{\alpha}\;.\;{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} \cong_{\HV{\alpha}} {\HSVar{t}}\HSSym{\mathrel{\wedge}}\HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HSVar{u}{}\<[E]%
+\>[B]{}\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}\triangleq\exists\;\HV{\alpha}\;.\;\HSSpecial{(}\HV{\alpha}\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HV{\alpha}\;\HSVar{t}\HSSpecial{)}\HSSym{\mathrel{\wedge}}\HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HSVar{u}{}\<[E]%
 \ColumnHook
 \end{pboxed}
 \)\par\noindent\endgroup\resethooks
@@ -426,15 +432,17 @@ We often abuse notation and write \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\HSSym{\
 \end{mydef}
  
 \begin{lemma}
-For all patch \ensuremath{\HSVar{p}\HSSpecial{,}\HSVar{t}} and \ensuremath{\HSVar{u}}, if \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}}, then
-\ensuremath{\HSVar{u}} is a term, that is, \ensuremath{\vars{\HSVar{u}}\HSSym{\equiv} \HSVar{emptyset}}.
+For all patch \ensuremath{\HSVar{p}}, term \ensuremath{\HSVar{t}} and \ensuremath{\HSVar{u}}$\in \termsof{L}$, if \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}}, then
+\ensuremath{\HSVar{u}} is a term, that is, \ensuremath{\vars{\HSVar{u}}\HSSym{\equiv} \emptyset}.
 \end{lemma}
 \begin{proof}
   Let \ensuremath{\HV{\alpha}} be the witness of \ensuremath{\app{\HSVar{p}}{\HSVar{t}}\;\HSVar{u}}, we
 know \ensuremath{\HSVar{u}\HSSym{\equiv} \HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}. We must prove that \ensuremath{\HV{\alpha}}
 substitutes all variables in \ensuremath{\pins{\HSVar{p}}} for terms to conclude the proof.
-That is simple considering that \ensuremath{{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} \cong_{\HV{\alpha}} {\HSVar{t}}}, 
-\ensuremath{\vars{\HSVar{t}}\HSSym{\equiv} \HSVar{emptyset}} and \ensuremath{\vars{\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}\;\subseteq\;\HSSpecial{(}\vars{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}}\HSSpecial{)}}.
+That is simple considering that \ensuremath{\HV{\alpha}\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HV{\alpha}\;\HSVar{t}}, 
+\ensuremath{\vars{\HSVar{t}}\HSSym{\equiv} \emptyset}; this means \ensuremath{\HV{\alpha}} must substitute all
+the variables in \ensuremath{\pdel{\HSVar{p}}} for subterms of \ensuremath{\HSVar{t}}, which also contain 
+no variables. Finally, since \ensuremath{\HSVar{p}} is a patch, we have that and \ensuremath{\HSSpecial{(}\vars{\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}\HSSpecial{)}\;\subseteq\;\HSSpecial{(}\vars{\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}}\HSSpecial{)}}, which yields that \ensuremath{\vars{\HSSpecial{(}\HV{\alpha}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSpecial{)}}\HSSym{\equiv} \emptyset}.
 \end{proof}
 
   With a notion of application at hand, we can define an extensional
@@ -452,9 +460,9 @@ the result of \ensuremath{\HSVar{p}} has a \ensuremath{\HSCon{Bin}} at its head 
 
 \begin{mydef}[Composition]
 Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be patches, we say \ensuremath{\HSVar{p}} composes with \ensuremath{\HSVar{q}},
-denoted \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}}, whenever \ensuremath{\pdel{\HSVar{p}}} is unifiable with \ensuremath{\pins{\HSVar{q}}}.
-Assume \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}} and let \ensuremath{\sigma} be the substituion witnessing
-the unification above. We define \ensuremath{\after{\HSVar{p}}{\HSVar{q}}} as:
+denoted \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}}, whenever \ensuremath{\pdel{\HSVar{p}}} is unifiable with \ensuremath{\pins{\HSVar{q}}}.
+Assume \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}} and let \ensuremath{\sigma} be the most general unifier
+for \ensuremath{\pdel{\HSVar{p}}} and \ensuremath{\pins{\HSVar{q}}}. We define \ensuremath{\after{\HSVar{p}}{\HSVar{q}}} as:
 
 \begingroup\par\noindent\advance\leftskip\mathindent\(
 \begin{pboxed}\SaveRestoreHook
@@ -466,13 +474,67 @@ the unification above. We define \ensuremath{\after{\HSVar{p}}{\HSVar{q}}} as:
 \)\par\noindent\endgroup\resethooks
 \end{mydef}
 
+  In order to prove correctness of composition, we must rely on our
+assumption that variable names never clash. That is, for any two patches
+\ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}}, \ensuremath{\vars{\HSVar{p}}\;\mathbin{\HS{\cap}}\;\vars{\cdot }\;\HSVar{q}\HSSym{\equiv} \emptyset}. In fact, this
+gives rise to a handy lemma.
+
+\begin{lemma}\label{lemma:disjsupcomp}
+  Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be composable patches, that is, \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}}. Let
+\ensuremath{\sigma} be the most general unifier of \ensuremath{\pdel{\HSVar{p}}} and \ensuremath{\pins{\HSVar{q}}}, witnessing
+\ensuremath{\comp{\HSVar{p}}{\HSVar{q}}}. Then, \ensuremath{\sigma\HSSym{\mathrel{=}}\sigma_p\;\cup\;\sigma_q} and \ensuremath{\sigma_p\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \sigma_q\;\HSSpecial{(}\HSVar{qins}\;\HSVar{q}\HSSpecial{)}}.
+\end{lemma}
+\begin{proof}
+Immediate since patches have disjoint sets of variables.
+\end{proof}
+
 \begin{lemma}
-  Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be patches such that \ensuremath{\HSVar{comp}\;\HSVar{p}\;\HSVar{q}}. Then,
+  Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be patches such that \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}}. Then,
 for all \ensuremath{\HSVar{t}\HSSpecial{,}\HSVar{u}}, \ensuremath{\app{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{u}} if and only if \ensuremath{\app{\HSVar{q}}{\HSVar{t}}\HSSym{\mathrel{=}}\HSVar{w}\HSSym{\mathrel{\wedge}}\app{\HSVar{p}}{\HSVar{w}}\HSSym{\mathrel{=}}\HSVar{u}}, for some \ensuremath{\HSVar{w}}. 
 \end{lemma}
 \begin{proof}
-todo: transcribe from notebook
+Let us prove the $(\Leftarrow)$ part of equivalence in detail.
+Assume \ensuremath{\exists\;\sigma_p\HSSpecial{,}\sigma_q} such that \ensuremath{\sigma_q\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}\HSSym{\equiv} \HSVar{t}}
+and \ensuremath{\sigma_p\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \sigma_q\;\HSSpecial{(}\pins{\HSVar{q}}\HSSpecial{)}\HSSym{\equiv} \HSVar{w}}. The proof follows
+in four steps.
+
+\begin{enumerate}
+\item \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}} can be witnessed by \ensuremath{\sigma_p\;\cup\;\sigma_q}.
+\begin{align*}
+      & \ensuremath{\HSSpecial{(}\sigma_p\;\cup\;\sigma_q\HSSpecial{)}\;\HSSpecial{(}\pins{\HSVar{q}}\HSSpecial{)}\HSSym{\equiv} \HSSpecial{(}\sigma_p\;\cup\;\sigma_q\HSSpecial{)}\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} & \\
+ \iff & \ensuremath{\sigma_q\;\HSSpecial{(}\pins{\HSVar{q}}\HSSpecial{)}\HSSym{\equiv} \sigma_p\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}} & (\Cref{lemma:disjsupcomp})\\
+ \iff & \ensuremath{\HSVar{hyp}}
+\end{align*}
+
+\item Now that we proved \ensuremath{\pins{\HSVar{q}}} and \ensuremath{\pdel{\HSVar{p}}} are unifiable, let \ensuremath{\sigma} be their
+most general unifier. This means there exists \ensuremath{\gamma} such that \ensuremath{\HSSpecial{(}\sigma_p\;\cup\;\sigma_q\HSSpecial{)}\HSSym{\mathrel{=}}\gamma\HSSym{\mathbin{\circ}}\sigma}.
+
+\item Next, we prove \ensuremath{\sigma\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}} unifies with \ensuremath{\HSVar{t}}, in order
+to state \ensuremath{\app{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{t}}}. In fact, \ensuremath{\gamma} above witnesses this fact.
+\begin{align*}
+      & \ensuremath{\gamma\;\HSVar{t}\HSSym{\equiv} \gamma\;\HSSpecial{(}\sigma\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}\HSSpecial{)}} & \\
+ \iff & \ensuremath{\gamma\;\HSVar{t}\HSSym{\equiv} \HSSpecial{(}\gamma\HSSym{\mathbin{\circ}}\sigma\HSSpecial{)}\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}} & \\
+ \iff & \ensuremath{\gamma\;\HSVar{t}\HSSym{\equiv} \HSSpecial{(}\sigma_p\;\cup\;\sigma_q\HSSpecial{)}\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}} & \\
+ \iff & \ensuremath{\gamma\;\HSVar{t}\HSSym{\equiv} \sigma_q\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}} & (\Cref{lemma:disjsupcomp}) \\
+ \iff & \ensuremath{\HSVar{t}\HSSym{\equiv} \sigma_q\;\HSSpecial{(}\pdel{\HSVar{q}}\HSSpecial{)}} & \ensuremath{\HSSpecial{\HSSym{\{\mskip1.5mu} }\HSVar{t}\;\HSVar{is}\;\HSVar{term}\HSSpecial{\HSSym{\mskip1.5mu\}}}}\\
+ \iff & \ensuremath{\HSVar{hyp}}
+\end{align*}
+
+\item Finally we need that \ensuremath{\gamma\;\HSSpecial{(}\sigma\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSpecial{)}\HSSym{\equiv} \sigma_p\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}
+to conclude the lemma. Again, because the supports of
+\ensuremath{\sigma_p} and \ensuremath{\sigma_q} are disjoint, \ensuremath{\sigma_p\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}\HSSym{\equiv} \HSSpecial{(}\sigma_p\;\cup\;\sigma_q\HSSpecial{)}\;\HSSpecial{(}\pins{\HSVar{p}}\HSSpecial{)}}.
+Step (2) above concludes the proof.
+\end{enumerate}
+
+The $(\Rightarrow)$ side of the equivalence is easier.
+Let \ensuremath{\sigma} witness \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}} and \ensuremath{\gamma} witness \ensuremath{\app{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{t}}\;\HSVar{u}}.
+Construct \ensuremath{\HSVar{w}} as \ensuremath{\HSSpecial{(}\gamma\HSSym{\mathbin{\circ}}\sigma\HSSpecial{)}\;\HSSpecial{(}\pins{\HSVar{q}}\HSSpecial{)}} and apply analogous reasoning.
 \end{proof}
+
+  With correctness of composition out of the way, we move on to
+proving that our composition operation abides by the same laws
+one would expect out of compositions: they have an identity and
+are associative.
 
 \begin{lemma}
 For any patch $p$, the identity patch \ensuremath{\patch{\HSVar{x}}{\HSVar{x}}} is a left and right
@@ -483,25 +545,14 @@ identity to patch composition, that is, \ensuremath{\after{\HSVar{p}}{\HSSpecial
 trivial
 \end{proof}
 
-  Before tackling associativity of composition, we must prove
-two auxiliary lemmas, below.
-
-\begin{lemma}
-  Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
-then there exists $\sigma_p, \sigma_q$ such that $\sigma = \sigma_p \cup \sigma_q$ and
-$\sigma_p \; \pdel{p} = \sigma_q \; \pins{q}$.
+\begin{lemma}\label{lemma:idemp}
+  Let \ensuremath{\HSVar{p}} and \ensuremath{\HSVar{q}} be composable patches, let \ensuremath{\sigma\HSSym{\mathrel{=}}\HSVar{mgu}\;\HSSpecial{(}\pdel{\HSVar{p}}\HSSpecial{)}\;\HSSpecial{(}\pins{\HSVar{q}}\HSSpecial{)}}.
+Then, \ensuremath{\sigma} is idempotent in \ensuremath{\pdel{\HSVar{p}}} and \ensuremath{\pins{\HSVar{q}}}, that is, \ensuremath{\sigma\;\HSSpecial{(}\sigma\;\HSVar{x}\HSSpecial{)}\HSSym{\mathrel{=}}\sigma\;\HSVar{x}}
+for \ensuremath{\HSVar{x}} to be \ensuremath{\pdel{\HSVar{p}}} or \ensuremath{\pins{\HSVar{q}}}.
 \end{lemma}
 \begin{proof}
-Immediate since $\vars{p} \cap \vars{q} = \emptyset$.
-\end{proof}
-
-\begin{lemma}
-  Given $p$ and $q$ composable patches, let $\sigma = \mgu(\pdel{p} , \pins{q})$,
-then $\sigma$ is idempodent in $\pdel{q}$ and $\pins{p}$. That is, $\sigma\;\sigma\;\pdel{q} = \sigma\;\pdel{q}$
-and similarly for $\pins{p}$.
-\end{lemma}
-\begin{proof}
-transcribe
+I think it is standard that mgu's are idenpotent; but I proved it in
+my notebook anyway; can transcribe if needed.
 \end{proof}
 
   Finally, we can prove the associativity of our composition operation.
@@ -509,10 +560,26 @@ transcribe
 \begin{lemma}
 Let $p$ and $q$ be composable patches. Let $r$ be a patch composable
 with \ensuremath{\after{\HSVar{p}}{\HSVar{q}}}. Then, $q$ and $r$ are composable and $p$ and \ensuremath{\after{\HSVar{q}}{\HSVar{r}}}
-are composable. Moreover, \ensuremath{\after{\HSSpecial{(}\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}\HSSpecial{)}}{\HSVar{r}}\sim\after{\HSVar{p}}{\HSSpecial{(}\HSSpecial{(}\after{\HSVar{r}}{\HSVar{q}}\HSSpecial{)}\HSSpecial{)}}}
+are composable.
 \end{lemma}
 \begin{proof}
-transcribe from notebook; somewhat long.
+\victor{transcribe}
+\end{proof}
+  
+\begin{lemma}
+Let $q$ and $r$ be composable patches. Let $p$ be a patch such that
+with \ensuremath{\comp{\HSVar{p}}{\HSSpecial{(}\after{\HSVar{q}}{\HSVar{r}}\HSSpecial{)}}}. Then, \ensuremath{\comp{\HSVar{p}}{\HSVar{q}}} composable and \ensuremath{\comp{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{r}}}.
+\end{lemma}
+\begin{proof}
+\victor{transcribe}
+\end{proof}
+
+  
+\begin{lemma}
+Let \ensuremath{\HSVar{p}\HSSpecial{,}\HSVar{q}} and \ensuremath{\HSVar{r}} be composable patches, \ensuremath{\HSSpecial{(}\after{\HSSpecial{(}\after{\HSVar{p}}{\HSVar{q}}\HSSpecial{)}}{\HSVar{r}}\HSSpecial{)}\sim\HSSpecial{(}\after{\HSVar{p}}{\HSSpecial{(}\after{\HSVar{q}}{\HSVar{r}}\HSSpecial{)}}\HSSpecial{)}}
+\end{lemma}
+\begin{proof}
+\victor{transcribe}
 \end{proof}
 
 \victor{I still have to talk about inverses, which is just swapping the deletion and insertion cotexts.}
@@ -536,6 +603,11 @@ potential shares between the source and destination tree.
 \victor{We are up to 30\% success rate on the dataset! yay}
 
 \section{Discussion}
+
+\subsection{The Case Against Inverses}
+
+\victor{Mimram dislikes inverses in the theory, they remove the
+ability to use model merges through pushouts}
 
 \subsection{The Case Against \emph{cost}}
 

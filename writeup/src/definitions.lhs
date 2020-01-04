@@ -7,6 +7,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %% Our packages
+\usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{xcolor}
 \usepackage{tikz}
