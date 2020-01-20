@@ -1,8 +1,8 @@
 #lang racket
 
 (require "hdiff/base.rkt")
-;; (require "mergers/merge-nov26.rkt")
-(require "mergers/merge-dec12.rkt")
+(require "mergers/merge-nov26.rkt")
+;; (require "mergers/merge-dec12.rkt")
 
 (define (runtc tc) 
   (match tc [(list 'tc pa pb o r) 
@@ -971,6 +971,24 @@
   '(bina f (binb (bina c leaf ) (binb (bina c leaf ) (binb (bina c leaf ) (binb (bina k leaf ) leaf)))) ))
 (define tc19pp (list 'tc pa-19pp pb-19pp o19pp r19pp))
 
+(define pa-21nn
+  '(c (chg (var 12) (var 12))
+   (c (chg (var 15)  N1)
+   (c (chg (var 13) (var 15))
+   (c (chg (var 14) (var 13))
+   (chg (var 11) (c (var 14) (c N2 (var 11)))))))))
+(define pb-21nn
+  '(c (chg A (var 3))
+   (c (chg (var 3) (var 2))
+   (c (chg (var 2) DD)
+   (chg (c D (var 1)) (var 1))))))
+(define o21nn
+  '(c A (c B (c C (c D (c E nil))))))
+(define r21nn
+  '(c N1 (c B (c C (c DD (c N2 (c E nil)))))))
+(define tc21nn 
+  (list 'tc pa-21nn pb-21nn o21nn r21nn))
+
 (define tests 
   (list (list 'tc1nn tc1nn)
         (list 'tc1ps tc1ps)
@@ -1029,6 +1047,7 @@
         (list 'tc19nn tc19nn)
         (list 'tc19ps tc19ps)
         (list 'tc19pp tc19pp)
+        (list 'tc21nn tc21nn)
   ))
 
 (define results 
